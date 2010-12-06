@@ -19,8 +19,9 @@
 \begin{document}
 
 
-\title{Analyse and Prediction of Package Timing Patterns of Streaming
-Applications on Multicore Machines}
+\title{Analyse and Prediction of Streaming
+Application Package Timing Patterns on Multicore Machines\\
+STAT248 Class Project}
 \author{Dai Bui}
 \maketitle
 \section{Introduction}
@@ -69,16 +70,24 @@ called \textit{actors}. Each actor has multiple input and output ports. Each
 input/output port is annotated with a number which is the number of
 \textit{tokens} the port will consume/produce each time the actor containing the
 port executes, so-called ~\textit{fires}. A token is a unit of data, it could be
-a number, a package, e.t.c.
+a number, a package, e.t.c. Furthermore, for each channel, for instance, the
+channel $D$ between $A$ and $B$, in order for data will not be accumulated on
+the channel, actor $B$ has to fire twice as many as the actor $A$ fires because
+actor $A$ will produce two tokens each time it fires and actor $B$ only consume
+one token each time it fires. Similarly, actor $B$ has to fire three times as
+many as the number of times actor $C$ fires. Therefore, an overall schedule of
+actors for the SDF application will be $AAABBBBBBCC$ in one iteration. The
+system could repeatedly execute the schedule again and again, and thus making
+the execution of the system periodic.
 
-\subsubsection{SDF Applications Partitioning}
+\subsubsection{Actor Partitioning}
 An SDF application is often composed of several actors and is partitioned into
-several parts and each part is then mapped to a core in a multi-core machine.
-For example, in Figure~\ref{fig:SDF}, an SDF application can be partitioned into
-two parts in which the first part is composed of actors $A$ and $B$, the second
-part is composed of actor $C$.
+several clusters and each cluster is then mapped to a core in a multi-core
+machine. For example, in Figure~\ref{fig:SDF}, an SDF application can be partitioned into
+two clusters in which the first cluster is composed of actors $A$ and $B$, the
+second cluster is composed of actor $C$.  
 
-\subsubsection{Data Accumulation}
+\subsubsection{Actor Communication}
 Data sent by actors located inside a core to another actor in another core are
 first put into a buffer. When the buffer is full, data is sent to the
 destination core. This accumulation mechanism could help increase the
@@ -97,19 +106,84 @@ respect SDF semantics to run on our simulator to obtain message trace and power
 saving data.
 
 \subsection{Package Timing Trace}
-
 To evaluate intervals between packages, we first run our application to obtain a
 network trace of messages. Based on that we use time series analysis
 techniques~\cite{BrillingerTimeSeries, ShumwayTimeSeries} to build a statistical
 model of messages based on that trace. The statistical model is then used to
-predict the future message intervals.
+predict the future message intervals. 
 \section{Timing Analysis}
+We use an MP3 decoder application with actor graph as in Figure~\ref{}. The
+network trace is used is between cluster 4 and 5.
+
 \subsection{ACF}
-\subsection{ARMA}
-\subsubsection{Problem with normal ARMA}
+\subsection{ARMA and Prediction}
+Autoregressive moving average (ARMA)~\cite{BoxTimeSeries, FalkStatSAS}
+ processes is used to predict the future values of a time series. We will first
+ describe the basic of ARMA processes.
+ 
+ An ARMA process is composition of an Autoregressive (AR) process and an Moving
+ Average (MA) process. Let $(\epsilon_t)_{t\in \mathbb{Z}}$ be white noise,
+ $\varphi_1, \ldots, \varphi_p, \theta_1, \ldots, \theta_q\in\mathbb{R}$.If a
+stochastic process $(Y_t)_{t\in \mathbb{Z}}$ satisfies the following
+ equation:
+ \begin{equation}\label{eqn:ARMA}
+ Y_t=\sum_{i=1}^{p}\varphi_iY_{t-i}+
+ \epsilon_t +\sum_{i=1}^{q}\theta_i\epsilon_{t-i}
+ \end{equation}
+then the process $(Y_t)_{t\in \mathbb{Z}}$ is said to be
+an \textit{autoregressive moving average process of order $p$, $q$}, denoted
+ARMA($p$, $q$).
+
+As we can see from the equation~\ref{eqn:ARMA}, if we can estimate the
+parameters $\varphi_i$ and $\theta_i$ then we can \textit{predict} the future
+outcome of an ARMA process based on previous observations of the process. To do
+that, we use Kalman filter and one of the optimization methods to estimate the
+\textit{maximum likelihood} given an observation sequence, the parameters
+$\varphi_i$ and $\theta_i$ are most likely to be.
+
+The equation~\ref{eqn:ARMA} first is converted into a state-space model (see
+page 115 in~\cite{FalkStatSAS} ) to used in Kalman filter to estimate
+likelihood. Then, Kalman filter can estimate the likelihood function
+$f(Y_T,\ldots, Y_0|\varphi, \theta)$ which is the probability density
+function of an observed sequence $(Y_t)_{t\in 1, \ldots, T}$ that given a set of
+parameters $(\varphi, \theta)$.
+
+Now we change the way saying about $f(Y_T,\ldots,Y_0|\varphi, \theta)$ that
+given the set of observed data $(Y_t)_{t\in 1, \ldots, T}$, we want the likelihood of
+some set of parameters $(\varphi, \theta)$, then we set:
+
+\begin{equation}\label{eqn:parametersLikelihood}
+\mathcal{L}(\varphi, \theta|Y_T,\ldots, Y_0) = f(Y_T,\ldots,Y_0|\varphi,
+\theta)
+\end{equation}
+
+The equation~\ref{eqn:parametersLikelihood} suggests that we can use some
+optimization methods like Powell and Nelder \& Mead methods, i.e. using
+$\mathcal{L}(\varphi, \theta|Y_T,\ldots, Y_0)$ as the input, to search for the
+maximum likelihood $\mathcal{L}(\varphi, \theta|Y_T,\ldots, Y_0)$, which means
+the most suitable parameters.
+\begin{equation}
+(\hat{\varphi},\hat{\theta})=\arg\max_{\varphi, \theta} \mathcal{L}(\varphi,
+\theta|Y_T,\ldots, Y_0)
+\end{equation}
+
+\subsubsection{Problem with conventional ARMA}
+Although ARMA is used to predict future values of a series based on
+previously observed sequence of the series, the interval series of packages has
+we use has a period of 8 as in the ACF in Figure~\ref{}. This large period makes
+it difficult to fit our series with an ARMA model since the order of the AR
+part greater or at least equal to 8. The we could not make the fitting process
+converge. To solve this problem, we use the seasonal ARMA.
+
 \subsubsection{Seasonal ARMA}
+We model the input data as follow:
+\begin{equation}
+Y_t = s_t + X_t
+\end{equation}
+where $s_t$ is the seasonal component.
 
 \subsection{Correlation of Package Send/Receive Time}
+\subsection{Confidence Interval}
 
 \bibliographystyle{plain}
 \bibliography{PkgTiming}
