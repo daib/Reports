@@ -9,9 +9,9 @@
 \usepackage{setspace}
 \doublespacing
 
-\addtolength{\oddsidemargin}{-1in}
-\addtolength{\evensidemargin}{-.875in}
-\addtolength{\textwidth}{2in}
+\addtolength{\oddsidemargin}{-.7in}
+% \addtolength{\evensidemargin}{-2in}
+\addtolength{\textwidth}{1.5in}
 % 
 \addtolength{\topmargin}{-1.2in}
 \addtolength{\textheight}{2.3in}
@@ -19,46 +19,64 @@
 \begin{document}
 
 
-\title{Evaluation and Prediction of Package Timing of Streaming Applications on
-Multicore Machines}
+\title{Analyse and Prediction of Package Timing Patterns of Streaming
+Applications on Multicore Machines}
 \author{Dai Bui}
 \maketitle
 \section{Introduction}
-Streaming applications' performance has been recognized as being
-predictable~\cite{AleenInputDriven, PoplavkoExecutionStreams,
-Theelen06ScenarioAware}. This predictable feature of streaming applications
-lies in the \textit{periodicity} of their underlying model of computation
-semantics~\cite{LeeSDF, ThiesStreamIt, GlitiaArrayOLDelay}. The inherent
-parallelism of streaming languages makes it suitable for multicore machines.
+Multicore machines have become more and more popular recently as a mechanism to
+speed up applications while increasing clock frequency has become more and more
+challenging. Now, applications are parallelized, partitioned and mapped into
+several difference processors instead of running on a single processor. However, energy
+saving is also one important aspect of the future computing research as there
+are more and more computing devices produced each year that would consume a great
+amount of energy. Streaming applications, i.e. MP3, MPEG4, e.t.c, is an
+important class of applications, however, are not very difficult to parallelize.
 
-The emerging Network on-Chip (NoC) interconnection
-paradigm~\cite{DallyPacketNotWire, demicheli_noc_book_2006} has been an
-interesting replacement for the traditional bus system which is deemed to be
-unscalable for large multicore machines with hundreds of cores.
+In this project, we aim at using time series analsysis
+techniques~\cite{BrillingerTimeSeries, ShumwayTimeSeries} to analyse and predict
+timing interval patterns of packages sent between partitions of a streaming
+applications on a multicore machine.
 
-However, the route diversity advantage of NoC that makes it scalable can also
-significantly increase the power consumption of a multicore machine. One of the
-potential power saving scheme is to turn off some links when they are not used.
-However, in order to do that, we need to know the timing of traffic between
-nodes, which is difficult for general applications. However, for streaming
-applications with their periodic traffic nature allow us to estimate timing of
-traffic between processing nodes using statistics methods such as time series
-analysis.
-
- 
-\section{Synchronous Dataflow}
-\section{Architectural and Communication Models}
-\subsection{Multicore and Network Models}
+\section{System Model}
+\subsection{System Architecture}
 We assume a message passing multicore system composed of several processing
-cores connected using a network on chip. Processing core has its own memory and
-is connected a router using a network interface.
+cores connected using a network on chip. Processing core (CPU) has its own
+memory and is connected a router using a network interface (NI) as in
+Figure~\ref{fig:MulticoreNoC}.
 
-\subsection{Communication Mechanism}
-\subsection{SDF Applications Partitioning}
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.7\columnwidth]{img/MulticoreNoC}
+\caption{System architecture}\label{fig:MulticoreNoC}
+\end{figure}
+
+\subsection{Synchronous Dataflow Model of Computation}
+One of the important feature of streaming applications that makes it possible to
+predict the timing interval patterns of packages between partition is the
+\textit{periodicity} semantic based on synchronous dataflow (SDF)~\cite{LeeSDF}
+model of computation. Figure~\ref{fig:SDF} shows a graph of a simple SDF
+application.
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.5\columnwidth]{img/SDF}
+\caption{An graph of an SDF application}\label{fig:SDF}
+\end{figure}
+
+In Figure~\ref{fig:SDF}, the SDF application is composed of three processes
+called \textit{actors}. Each actor has multiple input and output ports. Each
+input/output port is annotated with a number which is the number of
+\textit{tokens} the port will consume/produce each time the actor containing the
+port executes, so-called ~\textit{fires}. A token is a unit of data, it could be
+a number, a package, e.t.c.
+
+\subsubsection{SDF Applications Partitioning}
 An SDF application is often composed of several actors and is partitioned into
 several parts and each part is then mapped to a core in a multi-core machine.
-For example, in Figure~\ref{}, an SDF application is partitioned into three
-parts and then mapped to three different cores.
+For example, in Figure~\ref{fig:SDF}, an SDF application can be partitioned into
+two parts in which the first part is composed of actors $A$ and $B$, the second
+part is composed of actor $C$.
 
 \subsubsection{Data Accumulation}
 Data sent by actors located inside a core to another actor in another core are
@@ -68,28 +86,9 @@ destination core. This accumulation mechanism could help increase the
 to turn-on/off links and saving more power as turning links on/off consumes some
 amount of power.
 
-\subsubsection{Active Message Communication}
-
-\subsubsection{Credi-based Synchronization}
-To avoid the messaged dependent deadlock caused by unconsumed packages at
-destination nodes, we employ a credit based mechanism in which each
-communication flow between a source and a desination has a number of buffers of
-a specified size at the destination. Whenever the sender fills up one buffer at
-the receiver, it decreases its credit counter by one and will stop sending data
-when the credit counter reachs zero. Whenever the receiver consumes (process) a
-buffer, it sends back a credit the the sender so that the sender knows that the
-is one more free buffer at the destination and it can resume sending data.
-
-\section{Package Interval Prediction}
-\subsection{Package Trace}
-To evaluate intervals between packages, we first run our application to obtain a
-network trace of messages. Based on that we use time series analysis
-techniques~\cite{} to build a statistical model of messages based on that trace.
-the statistical model is then used to predict the future message intervals.
-
-\subsection{ARMA}
 
 \section{Experiment}
+\subsection{System Setup}
 We implemented a simulation framework of a distributed memory multicore using
 the SuperH processors~\cite{Stanley-MarbellSunflower} connected using a
 cycle accurate Wormsim~\cite{Wormsim} network on chip simulator with Orion power
@@ -97,12 +96,20 @@ model~\cite{WangOrion}. We use Streamit benchmarks~\cite{ThiesStreamIt} that
 respect SDF semantics to run on our simulator to obtain message trace and power
 saving data.
 
-\section{Related Work}
-There are several works on power optimizations of links on network on
-chips~\cite{LiCompilerDirected, LiProfileDriven,MuralidharaCommBased} for
-general applications. However, it is difficult to evaluate the interval of
-packages sent in a general applications as the control flow of a general
-applications can be complicated.
+\subsection{Package Timing Trace}
+
+To evaluate intervals between packages, we first run our application to obtain a
+network trace of messages. Based on that we use time series analysis
+techniques~\cite{BrillingerTimeSeries, ShumwayTimeSeries} to build a statistical
+model of messages based on that trace. The statistical model is then used to
+predict the future message intervals.
+\section{Timing Analysis}
+\subsection{ACF}
+\subsection{ARMA}
+\subsubsection{Problem with normal ARMA}
+\subsubsection{Seasonal ARMA}
+
+\subsection{Correlation of Package Send/Receive Time}
 
 \bibliographystyle{plain}
 \bibliography{PkgTiming}
