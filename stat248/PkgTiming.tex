@@ -1,0 +1,110 @@
+%%This is a very basic article template.
+%%There is just one section and two subsections.
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[colorlinks]{hyperref}
+\usepackage{cite}
+\usepackage{setspace}
+\doublespacing
+
+\addtolength{\oddsidemargin}{-1in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{2in}
+% 
+\addtolength{\topmargin}{-1.2in}
+\addtolength{\textheight}{2.3in}
+
+\begin{document}
+
+
+\title{Evaluation and Prediction of Package Timing of Streaming Applications on
+Multicore Machines}
+\author{Dai Bui}
+\maketitle
+\section{Introduction}
+Streaming applications' performance has been recognized as being
+predictable~\cite{AleenInputDriven, PoplavkoExecutionStreams,
+Theelen06ScenarioAware}. This predictable feature of streaming applications
+lies in the \textit{periodicity} of their underlying model of computation
+semantics~\cite{LeeSDF, ThiesStreamIt, GlitiaArrayOLDelay}. The inherent
+parallelism of streaming languages makes it suitable for multicore machines.
+
+The emerging Network on-Chip (NoC) interconnection
+paradigm~\cite{DallyPacketNotWire, demicheli_noc_book_2006} has been an
+interesting replacement for the traditional bus system which is deemed to be
+unscalable for large multicore machines with hundreds of cores.
+
+However, the route diversity advantage of NoC that makes it scalable can also
+significantly increase the power consumption of a multicore machine. One of the
+potential power saving scheme is to turn off some links when they are not used.
+However, in order to do that, we need to know the timing of traffic between
+nodes, which is difficult for general applications. However, for streaming
+applications with their periodic traffic nature allow us to estimate timing of
+traffic between processing nodes using statistics methods such as time series
+analysis.
+
+ 
+\section{Synchronous Dataflow}
+\section{Architectural and Communication Models}
+\subsection{Multicore and Network Models}
+We assume a message passing multicore system composed of several processing
+cores connected using a network on chip. Processing core has its own memory and
+is connected a router using a network interface.
+
+\subsection{Communication Mechanism}
+\subsection{SDF Applications Partitioning}
+An SDF application is often composed of several actors and is partitioned into
+several parts and each part is then mapped to a core in a multi-core machine.
+For example, in Figure~\ref{}, an SDF application is partitioned into three
+parts and then mapped to three different cores.
+
+\subsubsection{Data Accumulation}
+Data sent by actors located inside a core to another actor in another core are
+first put into a buffer. When the buffer is full, data is sent to the
+destination core. This accumulation mechanism could help increase the
+\textit{silent} intervals between packages and thus reducing the number of time
+to turn-on/off links and saving more power as turning links on/off consumes some
+amount of power.
+
+\subsubsection{Active Message Communication}
+
+\subsubsection{Credi-based Synchronization}
+To avoid the messaged dependent deadlock caused by unconsumed packages at
+destination nodes, we employ a credit based mechanism in which each
+communication flow between a source and a desination has a number of buffers of
+a specified size at the destination. Whenever the sender fills up one buffer at
+the receiver, it decreases its credit counter by one and will stop sending data
+when the credit counter reachs zero. Whenever the receiver consumes (process) a
+buffer, it sends back a credit the the sender so that the sender knows that the
+is one more free buffer at the destination and it can resume sending data.
+
+\section{Package Interval Prediction}
+\subsection{Package Trace}
+To evaluate intervals between packages, we first run our application to obtain a
+network trace of messages. Based on that we use time series analysis
+techniques~\cite{} to build a statistical model of messages based on that trace.
+the statistical model is then used to predict the future message intervals.
+
+\subsection{ARMA}
+
+\section{Experiment}
+We implemented a simulation framework of a distributed memory multicore using
+the SuperH processors~\cite{Stanley-MarbellSunflower} connected using a
+cycle accurate Wormsim~\cite{Wormsim} network on chip simulator with Orion power
+model~\cite{WangOrion}. We use Streamit benchmarks~\cite{ThiesStreamIt} that
+respect SDF semantics to run on our simulator to obtain message trace and power
+saving data.
+
+\section{Related Work}
+There are several works on power optimizations of links on network on
+chips~\cite{LiCompilerDirected, LiProfileDriven,MuralidharaCommBased} for
+general applications. However, it is difficult to evaluate the interval of
+packages sent in a general applications as the control flow of a general
+applications can be complicated.
+
+\bibliographystyle{plain}
+\bibliography{PkgTiming}
+
+\end{document}
