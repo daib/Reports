@@ -6,6 +6,7 @@
 \usepackage{graphicx}
 \usepackage[colorlinks]{hyperref}
 \usepackage{cite}
+\usepackage{subfigure}
 \usepackage{setspace}
 \doublespacing
 
@@ -113,9 +114,39 @@ model of messages based on that trace. The statistical model is then used to
 predict the future message intervals. 
 \section{Timing Analysis}
 We use an MP3 decoder application with actor graph as in Figure~\ref{}. The
-network trace is used is between cluster 4 and 5.
+network trace is used is between cluster 4 and 5. Figure~\ref{fig:s45} shows the
+network interval trace between clusters 4 and 5.
 
-\subsection{ACF}
+\begin{figure*}[ht!]
+\subfigure[Package interval trace between clusters 4 and 5]{
+\includegraphics[width=0.5\textwidth]{img/s45}
+\label{fig:s45}
+}
+\centering
+\subfigure[Package interval Autocorrelation]{
+\includegraphics[width=0.45\textwidth]{img/acfs45}
+\label{fig:acfs45}
+}
+\caption{Package Interval Sent Between Cluster 4 and 5}
+\end{figure*}
+
+% \begin{figure}[ht!]
+% \centering
+% \includegraphics[width=0.4\columnwidth]{img/s45}
+% \caption{Package interval trace between clusters 4 and 5}\label{fig:s45}
+% \end{figure}
+
+\subsection{Autocorrelation}
+Autocorrelation measures the dependency of between points in a series. 
+\begin{equation}
+\rho(s,t)=\frac{\gamma(s,t)}{\sqrt{\gamma(s,s)\gamma(t,t)}}
+\end{equation}
+% \begin{figure}[ht!]
+% \centering
+% \includegraphics[width=0.4\columnwidth]{img/acfs45}
+% \caption{Package interval Autocorrelation}\label{fig:acfs45}
+% \end{figure}
+
 \subsection{ARMA and Prediction}
 Autoregressive moving average (ARMA)~\cite{BoxTimeSeries, FalkStatSAS}
  processes is used to predict the future values of a time series. We will first
@@ -170,20 +201,23 @@ the most suitable parameters.
 \subsubsection{Problem with conventional ARMA}
 Although ARMA is used to predict future values of a series based on
 previously observed sequence of the series, the interval series of packages has
-we use has a period of 8 as in the ACF in Figure~\ref{}. This large period makes
-it difficult to fit our series with an ARMA model since the order of the AR
+we use has a period of 8 as in the ACF in Figure~\ref{fig:acfs45}. This large
+period makes it difficult to fit our series with an ARMA model since the order of the AR
 part greater or at least equal to 8. The we could not make the fitting process
 converge. To solve this problem, we use the seasonal ARMA.
 
 \subsubsection{Seasonal ARMA}
 We model the input data as follow:
 \begin{equation}
-Y_t = s_t + X_t
+Y_t = \alpha Y_t+\beta Y_{t-8}+s_t
 \end{equation}
-where $s_t$ is the seasonal component.
+where $s_t$ is the seasonal component and we again model it as a ARIMA process
+with order (1,1,1). When we use the 
 
 \subsection{Correlation of Package Send/Receive Time}
 \subsection{Confidence Interval}
+
+\subsection{Conclusion}
 
 \bibliographystyle{plain}
 \bibliography{PkgTiming}
