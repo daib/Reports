@@ -111,7 +111,8 @@ To evaluate intervals between packages, we first run our application to obtain a
 network trace of messages. Based on that we use time series analysis
 techniques~\cite{BrillingerTimeSeries, ShumwayTimeSeries} to build a statistical
 model of messages based on that trace. The statistical model is then used to
-predict the future message intervals. 
+predict the future message intervals.
+
 \section{Timing Analysis}
 \begin{figure}[ht!]
 \centering
@@ -119,8 +120,11 @@ predict the future message intervals.
 \caption{Package interval Autocorrelation}\label{fig:Cluster}
 \end{figure}
 We use an MP3 decoder application with actor graph as in
-Figure~\ref{fig:Cluster}. The network trace is used is between clusters 4 and 5.
-Figure~\ref{fig:s45} shows the network interval trace between clusters 4 and 5.
+Figure~\ref{fig:Cluster}. The network trace is used is from cluster 4 to cluster
+5. Figure~\ref{} shows timestamp packets sent between node 4 and 5, we then take
+the difference of the timestamps of the packets to get the interval between
+packets sent from cluster 4 to cluster 5 as in Figure~\ref{fig:s45} as the
+project aims at predicting the intervals between packets. 
 
 \begin{figure*}[ht!]
 \subfigure[Package interval trace between clusters 4 and 5]{
@@ -141,11 +145,18 @@ Figure~\ref{fig:s45} shows the network interval trace between clusters 4 and 5.
 % \caption{Package interval trace between clusters 4 and 5}\label{fig:s45}
 % \end{figure}
 
-\subsection{Autocorrelation}
-Autocorrelation measures the dependency of between points in a series. 
+\subsection{Autocovariance and Autocorrelation}
+Auto covariance measures the linear dependence between two points in the same
+series at different times.
+\begin{equation}
+\gamma(s,t)=cov(Y_s, Y_t)=E[(Y_s-\mu_s)(Y_t-\mu_t)]
+\end{equation}
+Autocorrelation measures the predictability of the series at time $t$, say $Y_t$
+ using only value $Y_s$.
 \begin{equation}
 \rho(s,t)=\frac{\gamma(s,t)}{\sqrt{\gamma(s,s)\gamma(t,t)}}
 \end{equation}
+
 % \begin{figure}[ht!]
 % \centering
 % \includegraphics[width=0.4\columnwidth]{img/acfs45}
@@ -203,25 +214,70 @@ the most suitable parameters.
 \theta|Y_T,\ldots, Y_0)
 \end{equation}
 
-\subsubsection{Problem with conventional ARMA}
+\subsubsection{Problem with Conventional ARMA}
 Although ARMA is used to predict future values of a series based on
 previously observed sequence of the series, the interval series of packages has
 we use has a period of 8 as in the ACF in Figure~\ref{fig:acfs45}. This large
 period makes it difficult to fit our series with an ARMA model since the order of the AR
 part greater or at least equal to 8. The we could not make the fitting process
-converge. To solve this problem, we use the seasonal ARMA.
+converge. To solve this problem, we use the Seasonal ARIMA (SARIMA).
 
-\subsubsection{Seasonal ARMA}
+\subsubsection{Seasonal ARIMA}
 We model the input data as follow:
 \begin{equation}
-Y_t = \alpha Y_t+\beta Y_{t-8}+s_t
+Y_t = \alpha Y_t+\beta Y_{t-8}+S_t+w_t
 \end{equation}
-where $s_t$ is the seasonal component and we again model it as a ARIMA process
-with order (1,1,1). When we use the 
+where $S_t$ is the seasonal component and we again model it as a ARIMA process
+with order (1,1,1), $w_t$ is white noise. The order (1,0,1) is used for the
+seasonal, the fitting process does not converge. This indicates that the seasonal process is
+non-stationary, which means that the seasonal component does not stay the same,
+however, it changes slowly over time by a random walk.
+\begin{equation}
+S_t = S_{t-8}+v_t
+\end{equation}
+with $v_t$ is white noise and $w_t$ and $v_t$ are not correlated.
+
+\subsection{Testing Residuals}
+When we obtain the residuals from the difference between observation and
+prediction data, it is our interest to test if the residuals is really white
+noise or it still has some frequency components in it by comparing the smoothed
+peridogram with confidence interval of white noise.
+
+\subsubsection{Confidence Interval}
+% \begin{equation}
+% \hat{s}(f)=\sum_{k=-m}^mW
+% \end{equation}
+% 
+% \begin{equation}
+% var\{\hat{s} (f)\}=s(f)^2\sum_
+% \end{equation}
+From~\cite{bloomfieldFourierTimeSeries}, if $\hat{s}(f)$ is a spectral estimate
+at frequency $f$: 
+\begin{equation}
+\hat{s}(f)=\sum_{k=-m}^mw_kI(f'-\frac{k}{n})
+\end{equation}
+where $f'$ is the Fourier frequency closest to $f$ and $n$ is the number length
+of the series, $w_m$ are weights of the Daniel filter used to smooth the
+peridogram.
+
+and $s(f)$ is the true and unknown value of the spectrum, then:
+\begin{equation}
+var\{\hat{s}(f)\}=s(f)^2\sum_{k=-m}^mw_k^2
+\end{equation}
+Then
+$\frac{\nu \hat{s}(f)}{s(f)}$ is approximately $\chi^2$ distributed with
+$\nu=\sum_{k=-m}^mw_k^2$ is the degree of freedom. Therefore for an apprximate
+$100(1-\alpha)\%$ confidence interval, we have:
+\begin{equation}\label{eqn:confidenceInterval}
+\frac{\nu\hat{s}(f)}{\chi_{\nu}^2(1-\alpha/2)}\leq s(f)\leq
+\frac{\nu\hat{s}(f)}{\chi_{\nu}^2(\alpha/2)}
+\end{equation}
+which means that $100(1-\alpha)\%$ of true frequency false into the confidence
+interval.
+\subsubsection{White Noise Tesing}
+
 
 \subsection{Correlation of Package Send/Receive Time}
-\subsection{Confidence Interval}
-
 \subsection{Conclusion}
 
 \bibliographystyle{plain}

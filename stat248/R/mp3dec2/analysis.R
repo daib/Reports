@@ -60,12 +60,13 @@ u = ps45.spec.mean * df /U
 
 ps45.spec.raw = spectrum(ps45.res, plot=FALSE)
 
-ylim = range(ps45.spec$spec, ps45.l, ps45.u, l, u, ps45.spec.raw$spec)
+#ylim = range(ps45.spec$spec, ps45.l, ps45.u, l, u, ps45.spec.raw$spec)
+ylim = range(ps45.spec$spec, ps45.l, ps45.u, l, u)
 
-plot(ps45.spec.raw, type="l", ylim=ylim)
-lines(ps45.spec$freq, ps45.spec$spec,ylim=ylim, type="l")
-#plot(ps45.spec,ylim=ylim, type="l")
-#plot(ps45.spec, ylim=ylim, type="l")
+#plot(ps45.spec.raw, type="l", ylim=ylim)
+#lines(ps45.spec$freq, ps45.spec$spec,ylim=ylim, type="l")
+
+plot(ps45.spec,ylim=ylim, type="l")
 lines(ps45.spec$freq, ps45.l, lty='dashed')
 lines(ps45.spec$freq, ps45.u, lty='dotdash' )
 
