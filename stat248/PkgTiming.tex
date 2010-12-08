@@ -49,7 +49,7 @@ Figure~\ref{fig:MulticoreNoC}.
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.7\columnwidth]{img/MulticoreNoC}
+\includegraphics[width=0.6\columnwidth]{img/MulticoreNoC}
 \caption{System architecture}\label{fig:MulticoreNoC}
 \end{figure}
 
@@ -84,18 +84,25 @@ the execution of the system periodic.
 \subsubsection{Actor Partitioning}
 An SDF application is often composed of several actors and is partitioned into
 several clusters and each cluster is then mapped to a core in a multi-core
-machine. For example, in Figure~\ref{fig:SDF}, an SDF application can be partitioned into
+machine. For example, in Figure~\ref{fig:comm}, an SDF application can be partitioned into
 two clusters in which the first cluster is composed of actors $A$ and $B$, the
 second cluster is composed of actor $C$.  
 
 \subsubsection{Actor Communication}
 Data sent by actors located inside a core to another actor in another core are
-first put into a buffer. When the buffer is full, data is sent to the
-destination core. This accumulation mechanism could help increase the
-\textit{silent} intervals between packages and thus reducing the number of time
-to turn-on/off links and saving more power as turning links on/off consumes some
-amount of power.
+first \textit{pushed} into a buffer as in Figure~\ref{fig:comm}. When the buffer
+is full, data in the buffer is sent to the destination core by several packets. We could easily see that data will be
+sent in \textit{bursts} of packets. This accumulation mechanism could help
+increase the \textit{silent} intervals between packages and thus reducing the
+number of time to turn-on/off links and saving more power as turning links
+on/off consumes some amount of power.
 
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.8\columnwidth]{img/comm}
+\caption{System architecture}\label{fig:comm}
+\end{figure}
 
 \section{Experiment}
 \subsection{System Setup}
@@ -121,20 +128,20 @@ predict the future message intervals.
 \end{figure}
 We use an MP3 decoder application with actor graph as in
 Figure~\ref{fig:Cluster}. The network trace is used is from cluster 4 to cluster
-5. Figure~\ref{} shows timestamp packets sent between node 4 and 5, we then take
-the difference of the timestamps of the packets to get the interval between
+5. Figure~\ref{fig:packettime} shows timestamp packets sent between node 4 and
+5, we then take the difference of the timestamps of the packets to get the interval between
 packets sent from cluster 4 to cluster 5 as in Figure~\ref{fig:s45} as the
 project aims at predicting the intervals between packets. 
 
 \begin{figure*}[ht!]
-\subfigure[Package interval trace between clusters 4 and 5]{
+\centering
+\subfigure[Package sending time]{
+\includegraphics[width=0.45\textwidth]{img/packettime}
+\label{fig:packettime}
+}
+\subfigure[Packet interval trace between clusters 4 and 5]{
 \includegraphics[width=0.5\textwidth]{img/s45}
 \label{fig:s45}
-}
-\centering
-\subfigure[Package interval Autocorrelation]{
-\includegraphics[width=0.45\textwidth]{img/acfs45}
-\label{fig:acfs45}
 }
 \caption{Package Interval Sent Between Cluster 4 and 5}
 \end{figure*}
@@ -151,17 +158,17 @@ series at different times.
 \begin{equation}
 \gamma(s,t)=cov(Y_s, Y_t)=E[(Y_s-\mu_s)(Y_t-\mu_t)]
 \end{equation}
-Autocorrelation measures the predictability of the series at time $t$, say $Y_t$
- using only value $Y_s$.
+where $\mu_t=E[Y_t]$. Autocorrelation measures the predictability of the series
+at time $t$, say $Y_t$ using only value $Y_s$.
 \begin{equation}
 \rho(s,t)=\frac{\gamma(s,t)}{\sqrt{\gamma(s,s)\gamma(t,t)}}
 \end{equation}
 
-% \begin{figure}[ht!]
-% \centering
-% \includegraphics[width=0.4\columnwidth]{img/acfs45}
-% \caption{Package interval Autocorrelation}\label{fig:acfs45}
-% \end{figure}
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.4\columnwidth]{img/acfs45}
+\caption{Package interval Autocorrelation}\label{fig:acfs45}
+\end{figure}
 
 \subsection{ARMA and Prediction}
 Autoregressive moving average (ARMA)~\cite{BoxTimeSeries, FalkStatSAS}
@@ -275,10 +282,30 @@ $100(1-\alpha)\%$ confidence interval, we have:
 which means that $100(1-\alpha)\%$ of true frequency false into the confidence
 interval.
 \subsubsection{White Noise Tesing}
+Given the understanding about confidence interval, we now want to test if the
+residuals between predicted values and actual values is actual white noise or
+not.
+
+To do that, we first assume the residuals are white noise. Since the series is
+white noise, then we then take the mean of the smoothed spectrum of the series
+as the flat spectrum of the series, say $m$. From that flat spectrum of the
+series, we then compute the upper and lower limits of the confidence interval:
+\begin{align}
+U &= \frac{\nu m}{\chi^2(\alpha/2)}\\
+L &= \frac{\nu m}{\chi^2(100-\alpha/2)}
+\end{align}
+
+If we use confidence interval of $95\%$, then there should be no more than $5\%$
+of the periodogram of the frequencies of the residual series fall outside of
+that upper and lower limit lines.
+
+\subsection{Correlation of Package Send/Receive Times}
+To see how the packets are delayed in traffic, we test the cross-correlation
+between the time packets sent at source and the time packets received at
+destination.
 
 
-\subsection{Correlation of Package Send/Receive Time}
-\subsection{Conclusion}
+\section{Conclusion}
 
 \bibliographystyle{plain}
 \bibliography{PkgTiming}

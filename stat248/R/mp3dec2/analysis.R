@@ -1,11 +1,16 @@
 read.s45 = read.table("s45")
+
+plot(read.s45[,1], type="l", main = "Packet sending time", xlab="Packet #", ylab="Cycle packets sent")
+
+dev.print(device=postscript, "packettime.eps", onefile=FALSE, horizontal=FALSE)
+
 s45 = diff(read.s45[,1])
 
 s45 = s45[65:648]
 
 par(mfrow=c(3,1))
-#plot(s45, type="l", main = "Packet timing interval trace", xlab="Packet #", ylab="Interval between two successive packages (# cycles)")
-plot(s45, type="l", main = "Packet timing interval trace", xlab="Packet #", ylab="Interval between packages (# cycles)")
+#plot(s45, type="l", main = "Packet timing interval trace", xlab="Packet #", ylab="Interval between two successive packets (# cycles)")
+plot(s45, type="l", main = "Packet timing interval trace", xlab="Packet #", ylab="Interval between packets (# cycles)")
 
 dev.print(device=postscript, "s45.eps", onefile=FALSE, horizontal=FALSE)
 
