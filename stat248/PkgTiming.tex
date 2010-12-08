@@ -113,9 +113,14 @@ techniques~\cite{BrillingerTimeSeries, ShumwayTimeSeries} to build a statistical
 model of messages based on that trace. The statistical model is then used to
 predict the future message intervals. 
 \section{Timing Analysis}
-We use an MP3 decoder application with actor graph as in Figure~\ref{}. The
-network trace is used is between cluster 4 and 5. Figure~\ref{fig:s45} shows the
-network interval trace between clusters 4 and 5.
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.7\columnwidth]{img/Cluster}
+\caption{Package interval Autocorrelation}\label{fig:Cluster}
+\end{figure}
+We use an MP3 decoder application with actor graph as in
+Figure~\ref{fig:Cluster}. The network trace is used is between clusters 4 and 5.
+Figure~\ref{fig:s45} shows the network interval trace between clusters 4 and 5.
 
 \begin{figure*}[ht!]
 \subfigure[Package interval trace between clusters 4 and 5]{
