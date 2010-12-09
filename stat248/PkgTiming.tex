@@ -21,7 +21,7 @@
 
 
 \title{Analyse and Prediction of Streaming
-Application Packet Timing Patterns on Multicore Machines\\
+Application Packet Timing Intervals on Multicore Machines\\
 STAT248 Class Project}
 \author{Dai Bui}
 \maketitle
@@ -37,7 +37,7 @@ important class of applications, however, are not very difficult to parallelize.
 
 In this project, we aim at using time series analysis
 techniques~\cite{BrillingerTimeSeries, ShumwayTimeSeries} to analyse and predict
-timing interval patterns of Packets sent between partitions of a streaming
+timing intervals of packets sent between partitions of a streaming
 applications on a multicore machine. This interval information is then used to
 turning communication links off to save power if we predict that the interval
 from a packet being sent to its successive packet in future is large. 
@@ -57,7 +57,7 @@ Figure~\ref{fig:MulticoreNoC}.
 
 \subsection{Synchronous Dataflow Model of Computation}\label{sec:SDF}
 One of the important feature of streaming applications that makes it possible to
-predict the timing interval patterns of Packets between partition is the
+predict the timing interval patterns of packets between partition is the
 \textit{periodicity} semantic based on synchronous dataflow (SDF)~\cite{LeeSDF}
 model of computation. Figure~\ref{fig:SDF} shows a graph of a simple SDF
 application.
@@ -101,7 +101,7 @@ destination cluster core. The actors in the destination clusters get data by
 several times larger than a packet size, so when a buffer is sent, several
 continuous packets are sent and it looks like a \textit{burst} of packets. This
 accumulation mechanism could help increase the \textit{silent} intervals between
-Packets and thus reducing the number of time to turn-on/off links and saving
+packets and thus reducing the number of time to turn-on/off links and saving
 more power as turning links on/off consumes some amount of power.
 
 
@@ -121,7 +121,7 @@ respect SDF semantics to run on our simulator to obtain message trace and power
 saving data.
 
 \subsection{Packet Timing Trace}
-To evaluate intervals between Packets, we first run our application to obtain a
+To evaluate intervals between packets, we first run our application to obtain a
 network trace of packets. Based on that we use time series analysis
 techniques~\cite{BrillingerTimeSeries, ShumwayTimeSeries} to build a statistical
 model of packets based on that trace. The statistical model is then used to
@@ -270,7 +270,7 @@ the most suitable parameters.
 
 \subsubsection{Problem with Conventional ARMA}
 Although ARMA is used to predict future values of a series based on
-previously observed sequence of the series, the interval series of Packets has
+previously observed sequence of the series, the interval series of packets has
 we use has a period of 8 as in the ACF in Figure~\ref{fig:s45peak}. This large
 period makes it difficult to fit our series with an ARMA model since the order of the AR
 part greater or at least equal to 8. The we could not make the fitting process
@@ -396,8 +396,8 @@ Figure~\ref{fig:results45} shows the result if predicted values in red. The
 actual values lies in between the 95\% upper confidence, in blue, lower of
 confidence,in green, limits. The confidence limits are computed as follows:
 \begin{align}
-upper\_limit = predicted\_value + 1.96*standard_error\\
-lower\_limit = predicted\_value - 1.96*standard_error
+upper\_limit = predicted\_value + 1.96*standard\_error\\
+lower\_limit = predicted\_value - 1.96*standard\_error
 \end{align}
 
 \begin{figure}[ht!]
