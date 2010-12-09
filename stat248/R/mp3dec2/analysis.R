@@ -8,36 +8,48 @@ s45 = diff(read.s45[,1])
 
 s45 = s45[65:648]
 
-par(mfrow=c(3,1))
 #plot(s45, type="l", main = "Packet timing interval trace", xlab="Packet #", ylab="Interval between two successive packets (# cycles)")
 plot(s45, type="l", main = "Packet timing interval trace", xlab="Packet #", ylab="Interval between packets (# cycles)")
 
 dev.print(device=postscript, "s45.eps", onefile=FALSE, horizontal=FALSE)
 
-acf(s45, main="Autocorrelation of Packet Interval")
+par(mfrow=c(3,1))
 
-dev.print(device=postscript, "acfs45.eps", onefile=FALSE, horizontal=FALSE)
+acf(s45, main="Autocorrelation of packet interval")
 
-spectrum(s45)
+#dev.print(device=postscript, "acfs45.eps", onefile=FALSE, horizontal=FALSE)
 
-dev.print(device=postscript, "spectrums45.eps", onefile=FALSE, horizontal=FALSE)
+spectrum(s45, main="Raw spectrum of original series")
+
+#dev.print(device=postscript, "spectrums45.eps", onefile=FALSE, horizontal=FALSE)
 
 
 ms45 <- matrix(s45,ncol=8, byrow=TRUE)
 
 means45 = apply(ms45,2,mean)
 
-s45.res = s45 - means45
+plot(means45, type="l", ylab="Invertal (# cycles)", main="Seasonal components");
 
-plot(s45.res, type="l")
+dev.print(device=postscript, "s45All.eps", onefile=FALSE, horizontal=FALSE)
 
-par(mfrow=c(2,1))
+s45.res = s45 - means45 #residuals after remove seasonal component
 
-spectrum(s45, main="original series")
+par(mfrow=c(3,1))
 
-spectrum(s45.res, main="mean removed series")
+plot(s45.res, type="l", ylab="Residuals after removing seasonal", main="Residuals after removing seasonal")
 
+abline(h=0);
+
+spectrum(s45.res, main="Raw spectrum of seasonal removed series")
+
+acf(s45.res, lag.max=100, main="Autocorrelation of the residuals")
+
+dev.print(device=postscript, "s45res.eps", onefile=FALSE, horizontal=FALSE)
+
+#take only the peaks
 ps45 = ms45[,8]
+
+#SARIMA
 fss45 <- arima(ps45[1:56], order=c(1,0,1), seasonal=list(order=c(1,1,1), period = 8))
 ps45.pred = predict(fss45, n.ahead = 16)
 ps45.res = ps45[57:72]-ps45.pred$pred

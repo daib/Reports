@@ -21,7 +21,7 @@
 
 
 \title{Analyse and Prediction of Streaming
-Application Package Timing Patterns on Multicore Machines\\
+Application Packet Timing Patterns on Multicore Machines\\
 STAT248 Class Project}
 \author{Dai Bui}
 \maketitle
@@ -35,10 +35,12 @@ are more and more computing devices produced each year that would consume a grea
 amount of energy. Streaming applications, i.e. MP3, MPEG4, e.t.c, is an
 important class of applications, however, are not very difficult to parallelize.
 
-In this project, we aim at using time series analsysis
+In this project, we aim at using time series analysis
 techniques~\cite{BrillingerTimeSeries, ShumwayTimeSeries} to analyse and predict
-timing interval patterns of packages sent between partitions of a streaming
-applications on a multicore machine.
+timing interval patterns of Packets sent between partitions of a streaming
+applications on a multicore machine. This interval information is then used to
+turning communication links off to save power if we predict that the interval
+from a packet being sent to its successive packet in future is large. 
 
 \section{System Model}
 \subsection{System Architecture}
@@ -55,7 +57,7 @@ Figure~\ref{fig:MulticoreNoC}.
 
 \subsection{Synchronous Dataflow Model of Computation}
 One of the important feature of streaming applications that makes it possible to
-predict the timing interval patterns of packages between partition is the
+predict the timing interval patterns of Packets between partition is the
 \textit{periodicity} semantic based on synchronous dataflow (SDF)~\cite{LeeSDF}
 model of computation. Figure~\ref{fig:SDF} shows a graph of a simple SDF
 application.
@@ -71,7 +73,7 @@ called \textit{actors}. Each actor has multiple input and output ports. Each
 input/output port is annotated with a number which is the number of
 \textit{tokens} the port will consume/produce each time the actor containing the
 port executes, so-called ~\textit{fires}. A token is a unit of data, it could be
-a number, a package, e.t.c. Furthermore, for each channel, for instance, the
+a number, a Packet, e.t.c. Furthermore, for each channel, for instance, the
 channel $D$ between $A$ and $B$, in order for data will not be accumulated on
 the channel, actor $B$ has to fire twice as many as the actor $A$ fires because
 actor $A$ will produce two tokens each time it fires and actor $B$ only consume
@@ -91,11 +93,12 @@ second cluster is composed of actor $C$.
 \subsubsection{Actor Communication}
 Data sent by actors located inside a core to another actor in another core are
 first \textit{pushed} into a buffer as in Figure~\ref{fig:comm}. When the buffer
-is full, data in the buffer is sent to the destination core by several packets. We could easily see that data will be
-sent in \textit{bursts} of packets. This accumulation mechanism could help
-increase the \textit{silent} intervals between packages and thus reducing the
-number of time to turn-on/off links and saving more power as turning links
-on/off consumes some amount of power.
+is full, data in the buffer is sent to the destination core in packets. As a
+buffer size is several times larger than a packet size, so when a buffer is
+sent, several continuous packets are sent and it looks like a \textit{burst} of
+packets. This accumulation mechanism could help increase the \textit{silent}
+intervals between Packets and thus reducing the number of time to turn-on/off
+links and saving more power as turning links on/off consumes some amount of power.
 
 
 \begin{figure}[ht!]
@@ -113,29 +116,29 @@ model~\cite{WangOrion}. We use Streamit benchmarks~\cite{ThiesStreamIt} that
 respect SDF semantics to run on our simulator to obtain message trace and power
 saving data.
 
-\subsection{Package Timing Trace}
-To evaluate intervals between packages, we first run our application to obtain a
+\subsection{Packet Timing Trace}
+To evaluate intervals between Packets, we first run our application to obtain a
 network trace of messages. Based on that we use time series analysis
 techniques~\cite{BrillingerTimeSeries, ShumwayTimeSeries} to build a statistical
 model of messages based on that trace. The statistical model is then used to
 predict the future message intervals.
 
-\section{Timing Analysis}
+\section{Analysis}
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.7\columnwidth]{img/Cluster}
-\caption{Package interval Autocorrelation}\label{fig:Cluster}
+\includegraphics[width=0.5\columnwidth]{img/Cluster}
+\caption{Packet interval Autocorrelation}\label{fig:Cluster}
 \end{figure}
 We use an MP3 decoder application with actor graph as in
 Figure~\ref{fig:Cluster}. The network trace is used is from cluster 4 to cluster
-5. Figure~\ref{fig:packettime} shows timestamp packets sent between node 4 and
-5, we then take the difference of the timestamps of the packets to get the interval between
-packets sent from cluster 4 to cluster 5 as in Figure~\ref{fig:s45} as the
-project aims at predicting the intervals between packets. 
+5. Figure~\ref{fig:packettime} shows timestamps of packets sent between node 4
+and 5, we then take the difference of the timestamps to get the intervals
+between successive packets sent from cluster 4 to cluster 5 as in
+Figure~\ref{fig:s45} as the project aims at predicting the intervals between packets. 
 
 \begin{figure*}[ht!]
 \centering
-\subfigure[Package sending time]{
+\subfigure[Packet sending time]{
 \includegraphics[width=0.45\textwidth]{img/packettime}
 \label{fig:packettime}
 }
@@ -143,17 +146,22 @@ project aims at predicting the intervals between packets.
 \includegraphics[width=0.5\textwidth]{img/s45}
 \label{fig:s45}
 }
-\caption{Package Interval Sent Between Cluster 4 and 5}
+\caption{Packet Interval Sent Between Cluster 4 and 5}
 \end{figure*}
 
 % \begin{figure}[ht!]
 % \centering
 % \includegraphics[width=0.4\columnwidth]{img/s45}
-% \caption{Package interval trace between clusters 4 and 5}\label{fig:s45}
+% \caption{Packet interval trace between clusters 4 and 5}\label{fig:s45}
 % \end{figure}
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.8\columnwidth]{img/s45All}
+\caption{Original interval series}\label{fig:s45All}
+\end{figure}
 
 \subsection{Autocovariance and Autocorrelation}
-Auto covariance measures the linear dependence between two points in the same
+Autocovariance measures the linear dependence between two points in the same
 series at different times.
 \begin{equation}
 \gamma(s,t)=cov(Y_s, Y_t)=E[(Y_s-\mu_s)(Y_t-\mu_t)]
@@ -166,8 +174,8 @@ at time $t$, say $Y_t$ using only value $Y_s$.
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.4\columnwidth]{img/acfs45}
-\caption{Package interval Autocorrelation}\label{fig:acfs45}
+\includegraphics[width=0.8\columnwidth]{img/s45res}
+\caption{Residual series after removing seasonal}\label{s45res.pdf}
 \end{figure}
 
 \subsection{ARMA and Prediction}
@@ -223,7 +231,7 @@ the most suitable parameters.
 
 \subsubsection{Problem with Conventional ARMA}
 Although ARMA is used to predict future values of a series based on
-previously observed sequence of the series, the interval series of packages has
+previously observed sequence of the series, the interval series of Packets has
 we use has a period of 8 as in the ACF in Figure~\ref{fig:acfs45}. This large
 period makes it difficult to fit our series with an ARMA model since the order of the AR
 part greater or at least equal to 8. The we could not make the fitting process
@@ -248,7 +256,7 @@ with $v_t$ is white noise and $w_t$ and $v_t$ are not correlated.
 When we obtain the residuals from the difference between observation and
 prediction data, it is our interest to test if the residuals is really white
 noise or it still has some frequency components in it by comparing the smoothed
-peridogram with confidence interval of white noise.
+periodogram with confidence interval of white noise.
 
 \subsubsection{Confidence Interval}
 % \begin{equation}
@@ -265,7 +273,7 @@ at frequency $f$:
 \end{equation}
 where $f'$ is the Fourier frequency closest to $f$ and $n$ is the number length
 of the series, $w_m$ are weights of the Daniel filter used to smooth the
-peridogram.
+periodogram.
 
 and $s(f)$ is the true and unknown value of the spectrum, then:
 \begin{equation}
@@ -273,7 +281,7 @@ var\{\hat{s}(f)\}=s(f)^2\sum_{k=-m}^mw_k^2
 \end{equation}
 Then
 $\frac{\nu \hat{s}(f)}{s(f)}$ is approximately $\chi^2$ distributed with
-$\nu=\sum_{k=-m}^mw_k^2$ is the degree of freedom. Therefore for an apprximate
+$\nu=\sum_{k=-m}^mw_k^2$ is the degree of freedom. Therefore for an approximate
 $100(1-\alpha)\%$ confidence interval, we have:
 \begin{equation}\label{eqn:confidenceInterval}
 \frac{\nu\hat{s}(f)}{\chi_{\nu}^2(1-\alpha/2)}\leq s(f)\leq
@@ -281,7 +289,7 @@ $100(1-\alpha)\%$ confidence interval, we have:
 \end{equation}
 which means that $100(1-\alpha)\%$ of true frequency false into the confidence
 interval.
-\subsubsection{White Noise Tesing}
+\subsubsection{White Noise Testing}
 Given the understanding about confidence interval, we now want to test if the
 residuals between predicted values and actual values is actual white noise or
 not.
@@ -299,13 +307,23 @@ If we use confidence interval of $95\%$, then there should be no more than $5\%$
 of the periodogram of the frequencies of the residual series fall outside of
 that upper and lower limit lines.
 
-\subsection{Correlation of Package Send/Receive Times}
-To see how the packets are delayed in traffic, we test the cross-correlation
-between the time packets sent at source and the time packets received at
-destination.
+Figure~\ref{fig:}
+
+% \subsection{Correlation of Packet Send/Receive Times}
+% To see how the packets are delayed in traffic, we test the cross-correlation
+% between the time packets sent at source and the time packets received at
+% destination.
 
 
 \section{Conclusion}
+The main motivation for this project is to use ARMA technique to predict a
+periodic process based on the observation that ARMA could be very suitable for
+periodic processes.
+
+\begin{itemize}
+  \item Parameter changed overtime
+  \item Draw the variance and predicted values
+\end{itemize}
 
 \bibliographystyle{plain}
 \bibliography{PkgTiming}
