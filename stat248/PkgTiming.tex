@@ -55,7 +55,7 @@ Figure~\ref{fig:MulticoreNoC}.
 \caption{System architecture}\label{fig:MulticoreNoC}
 \end{figure}
 
-\subsection{Synchronous Dataflow Model of Computation}
+\subsection{Synchronous Dataflow Model of Computation}\label{sec:SDF}
 One of the important feature of streaming applications that makes it possible to
 predict the timing interval patterns of Packets between partition is the
 \textit{periodicity} semantic based on synchronous dataflow (SDF)~\cite{LeeSDF}
@@ -85,20 +85,23 @@ the execution of the system periodic.
 
 \subsubsection{Actor Partitioning}
 An SDF application is often composed of several actors and is partitioned into
-several clusters and each cluster is then mapped to a core in a multi-core
-machine. For example, in Figure~\ref{fig:comm}, an SDF application can be partitioned into
-two clusters in which the first cluster is composed of actors $A$ and $B$, the
-second cluster is composed of actor $C$.  
+several disjoin clusters. Each cluster is then mapped to a processing core in a
+multi-core machine. For example, in Figure~\ref{fig:comm}, an SDF application
+can be partitioned into two clusters in which the first cluster is composed of
+actors $A$ and $B$ runs in one core, the second cluster is composed of actor
+$C$ runs in another core.
 
-\subsubsection{Actor Communication}
-Data sent by actors located inside a core to another actor in another core are
-first \textit{pushed} into a buffer as in Figure~\ref{fig:comm}. When the buffer
-is full, data in the buffer is sent to the destination core in packets. As a
-buffer size is several times larger than a packet size, so when a buffer is
-sent, several continuous packets are sent and it looks like a \textit{burst} of
-packets. This accumulation mechanism could help increase the \textit{silent}
-intervals between Packets and thus reducing the number of time to turn-on/off
-links and saving more power as turning links on/off consumes some amount of power.
+\subsubsection{Inter-cluster Communication}\label{sec:cluster_comm}
+Data sent by actors located inside a cluster to actors in some other
+cluster are first \textit{pushed} into a buffer as in Figure~\ref{fig:comm}. When the buffer
+is full, data in the buffer is transmitted to another buffer located in the
+destination cluster core. The actors in the destinaton clusters get data by
+\textit{poping} data out from the receiving buffers. As a buffer size is
+several times larger than a packet size, so when a buffer is sent, several
+continuous packets are sent and it looks like a \textit{burst} of packets. This
+accumulation mechanism could help increase the \textit{silent} intervals between
+Packets and thus reducing the number of time to turn-on/off links and saving
+more power as turning links on/off consumes some amount of power.
 
 
 \begin{figure}[ht!]
@@ -127,14 +130,18 @@ predict the future message intervals.
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=0.5\columnwidth]{img/Cluster}
-\caption{Packet interval Autocorrelation}\label{fig:Cluster}
+\caption{Clustering graph of an SDF application}\label{fig:Cluster}
 \end{figure}
+
 We use an MP3 decoder application with actor graph as in
-Figure~\ref{fig:Cluster}. The network trace is used is from cluster 4 to cluster
-5. Figure~\ref{fig:packettime} shows timestamps of packets sent between node 4
-and 5, we then take the difference of the timestamps to get the intervals
-between successive packets sent from cluster 4 to cluster 5 as in
-Figure~\ref{fig:s45} as the project aims at predicting the intervals between packets. 
+Figure~\ref{fig:Cluster}. In the clustering graph, we see the \textit{push} and
+\textit{pop} parameters in each cluster denoting how many times the actors in
+the cluster push/pop data to/from actors in other clusters in one iteration
+(one pass of schedule. See Section~\ref{sec:SDF}). The network trace is used is
+from cluster 4 to cluster 5. Figure~\ref{fig:packettime} shows timestamps of
+packets sent between node 4 and 5, we then take the difference of the timestamps
+to get the intervals between successive packets sent from cluster 4 to cluster 5
+as in Figure~\ref{fig:s45} as the project aims at predicting the intervals between packets.
 
 \begin{figure*}[ht!]
 \centering
@@ -160,22 +167,41 @@ Figure~\ref{fig:s45} as the project aims at predicting the intervals between pac
 \caption{Original interval series}\label{fig:s45All}
 \end{figure}
 
-\subsection{Autocovariance and Autocorrelation}
-Autocovariance measures the linear dependence between two points in the same
-series at different times.
-\begin{equation}
-\gamma(s,t)=cov(Y_s, Y_t)=E[(Y_s-\mu_s)(Y_t-\mu_t)]
-\end{equation}
-where $\mu_t=E[Y_t]$. Autocorrelation measures the predictability of the series
+% \subsection{Autocovariance and Autocorrelation}
+We first look at autocorrelation that measures the predictability of the series
 at time $t$, say $Y_t$ using only value $Y_s$.
 \begin{equation}
 \rho(s,t)=\frac{\gamma(s,t)}{\sqrt{\gamma(s,s)\gamma(t,t)}}
 \end{equation}
 
+where $\gamma(s,t)$ is autocovariance which measures the linear dependence
+between two points in the same series at different times.
+\begin{equation}
+\gamma(s,t)=cov(Y_s, Y_t)=E[(Y_s-\mu_s)(Y_t-\mu_t)]
+\end{equation}
+with $\mu_t=E[Y_t]$.
+
+The autocorrelation of the series in Figure~\ref{fig:s45All} show strong
+correlation between data points at lags that are multiple of 8. The raw
+periodogram estimate of spectrums also shows high peaks at frequencies that are
+multiple of $\frac{1}{8}$. Both of the above criteria exhibit that the interval
+series has seasonal behaviour with period of 8. We compute the seasonal
+components by computing the mean of data points at lag 8. The
+Figure~\ref{fig:s45res} shows the residuals of the interval series after
+removing the seasonal components. We can see that there is strong correlation
+between data points at lag 64 and periodogram estimate peaks at frequencies
+that are multiple of $\frac{1}{64}$. We also observe that, after removing
+seasonal components, the residual series is \textit{sparse}, which means that
+most of the series is zero, non-zero points only appear at the lag of 8. This
+observation exhibits that the large intervals between two successive packets are
+actually the interval between the last packet of a former \textit{burst} of data
+(See Section~\ref{sec:cluster_comm}) and the first packet of its latter burst.
+The intervals between packets in a burst are constant.
+
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=0.8\columnwidth]{img/s45res}
-\caption{Residual series after removing seasonal}\label{s45res.pdf}
+\caption{Residual series after removing seasonal}\label{fig:s45res}
 \end{figure}
 
 \subsection{ARMA and Prediction}
