@@ -20,7 +20,7 @@
 \begin{document}
 
 
-\title{Analyse and Prediction of Streaming
+\title{Analysis and Prediction of Streaming
 Application Packet Timing Intervals on Multicore Machines\\
 STAT248 Class Project}
 \author{Dai Bui}
@@ -32,13 +32,13 @@ challenging. Now, applications are parallelized, partitioned and mapped into
 several difference processors instead of running on a single processor. However, energy
 saving is also one important aspect of the future computing research as there
 are more and more computing devices produced each year that would consume a great
-amount of energy. Streaming applications, i.e. MP3, MPEG4, e.t.c, is an
+amount of energy. Streaming applications, i.e. MP3, MPEG4, etc, is an
 important class of applications, however, are not very difficult to parallelize.
 
 In this project, we aim at using time series analysis
 techniques~\cite{BrillingerTimeSeries, ShumwayTimeSeries} to analyse and predict
 timing intervals of packets sent between partitions of a streaming
-applications on a multicore machine. This interval information is then used to
+application on a multicore machine. This interval information is then used to
 turning communication links off to save power if we predict that the interval
 from a packet being sent to its successive packet in future is large. 
 
@@ -170,15 +170,15 @@ at time $t$, say $Y_t$ using only value $Y_s$.
 \rho(s,t)=\frac{\gamma(s,t)}{\sqrt{\gamma(s,s)\gamma(t,t)}}
 \end{equation}
 
-where $\gamma(s,t)$ is autocovariance which measures the linear dependence
+where $\gamma(s,t)$ is autocovariance that measures the linear dependence
 between two points in the same series at different times.
 \begin{equation}
 \gamma(s,t)=cov(Y_s, Y_t)=E[(Y_s-\mu_s)(Y_t-\mu_t)]
 \end{equation}
 with $\mu_t=E[Y_t]$.
 
-The autocorrelation of the series in Figure~\ref{fig:s45All} show strong
-correlation between data points at lags that are multiple of 8. The raw
+The autocorrelation of the series in Figure~\ref{fig:s45All} shows strong
+correlations between data points at lags that are multiple of 8. The raw
 periodogram estimate of spectrums also shows high peaks at frequencies that are
 multiple of $\frac{1}{8}$. Both of the above criteria exhibit that the interval
 series has seasonal behaviour with period of 8. We compute the seasonal
@@ -193,7 +193,7 @@ observation exhibits that the large intervals between two successive packets are
 actually the interval between the last packet of a former \textit{burst} of data
 (See Section~\ref{sec:cluster_comm}) and the first packet of its latter burst.
 The intervals between packets in of a burst are constant. Therefore, now we only
-consider the \textit{peak} intervals which are intervals that when we remove
+consider the \textit{peak} intervals that are intervals that when we remove
 the seasonal components, the residual is \textit{not} zero. For example, in
 Figure~\ref{fig:s45All} peak intervals are points that are higher than the flat
 bottom line.
@@ -213,7 +213,7 @@ Autoregressive moving average (ARMA)~\cite{BoxTimeSeries, FalkStatSAS}
  
  An ARMA process is composition of an Autoregressive (AR) process and an Moving
  Average (MA) process. Let $(\epsilon_t)_{t\in \mathbb{Z}}$ be white noise,
- $\varphi_1, \ldots, \varphi_p, \theta_1, \ldots, \theta_q\in\mathbb{R}$.If a
+ $\varphi_1, \ldots, \varphi_p, \theta_1, \ldots, \theta_q\in\mathbb{R}$. If a
 stochastic process $(Y_t)_{t\in \mathbb{Z}}$ satisfies the following
  equation:
  \begin{equation}\label{eqn:ARMA}
@@ -268,7 +268,7 @@ Although ARMA is used to predict future values of a series based on
 previously observed sequence of the series, the interval series of packets has
 we use has a period of 8 as in the ACF in Figure~\ref{fig:s45peak}. This large
 period makes it difficult to fit our series with an ARMA model since the order of the AR
-part greater or at least equal to 8. The we could not make the fitting process
+part greater or at least equal to 8. We could not make the fitting process
 converge. To solve this problem, we use the Seasonal ARIMA (SARIMA).
 
 \begin{figure}[ht!]
@@ -298,7 +298,7 @@ of order (1,1,1). When we use the ARIMA order of (1,1,1) for the residuals, the
 AIC is 1427.763, which is considerably difference, however, the prediction
 result is worse visually. 
 
-Use use the final model ARIMA(1,0,1)$\times$(0,1,1) with parameters  
+We use the final model ARIMA(1,0,1)$\times$(0,1,1) with parameters  
 
 $ar1=0.8127,ma1=0.2921, seasonal\_ma1=-0.657$
 
@@ -346,13 +346,13 @@ interval.
 \subsubsection{White Noise Testing}
 In the smoothed periodogram of the residuals in Figure~\ref{fig:predictions45},
 the dashed and dot-dash curves mark the confidence interval of the smoothed
-periodogram. We can see that there is now significant peaks in the periodogram
+periodogram. We can see that there are no significant peaks in the periodogram
 estimate. The value of the lower confidence interval of frequency is not clearly
-larger then the periodogram estimate at other frequencies. This implies that the
-is no significant statistical frequency in the residuals~\cite{CryerTimeSeries}.
-We can also use the \textit{cross} to se the confidence interval of the smoothed
-periodogram. The length of the vertical line is the range of confidence interval
-at a given frequency in \textit{logarithm} scale. If we put the cross point of
+larger then the periodogram estimate at other frequencies. This implies that
+there is no significant statistical frequency in the
+residuals~\cite{CryerTimeSeries}. We can also use the \textit{cross} to se the
+confidence interval of the smoothed periodogram. The length of the vertical line
+is the range of confidence interval at a given frequency in \textit{logarithm} scale. If we put the cross point of
 the cross at a point at one periodogram estimate of a given frequency, then the
 upper and lower ends of the vertical line mark the upper and lower confidence
 interval in logarithm scale.
@@ -389,7 +389,7 @@ saying that the residuals are indeed white noise.
 \subsection{Result}
 Figure~\ref{fig:results45} shows the result if predicted values in red. The
 actual values lies in between the 95\% upper confidence, in blue, lower of
-confidence,in green, limits. The confidence limits are computed as follows:
+confidence, in green, limits. The confidence limits are computed as follows:
 \begin{align}
 upper\_limit = predicted\_value + 1.96*standard\_error\\
 lower\_limit = predicted\_value - 1.96*standard\_error
@@ -412,7 +412,7 @@ However, in more dynamic SDF models of computation where
 production/consumption rates of ports of actors could be changed resulting in
 the change in the schedule, we need a more dynamic ARMA models. 
 
-Using the data analysis methods, we could the see that most of the time, the
+Using the data analysis methods, we could the see that for most of the time, the
 communication links are idle. A transmission link could be idle for millions of
 cycles as showed in the analysis. During that time, if we could predict and turn
 off the link, we could save the leakage power of the link. That could be a
