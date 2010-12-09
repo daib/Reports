@@ -45,7 +45,7 @@ dev.print(device=postscript, "s45res.eps", onefile=FALSE, horizontal=FALSE)
 ps45 = ms45[2:nrow(ms45),8]
 
 #par(mfrow=c(2,1))
-plot(s45, type="l", ylab="Peak intervals (#cycles)", main="Peak interval series")
+plot(ps45, type="l", ylab="Peak intervals (#cycles)", main="Peak interval series")
 spectrum(s45, main="Raw spectrum the high peaks  series")
 acf(s45, lag.max=100, main="Autocorrelation of the high peak series")
 
