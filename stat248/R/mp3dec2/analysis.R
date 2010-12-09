@@ -111,7 +111,7 @@ ylim=range(upper, lower, ps45.pred$pred, ps45)
 #plot(ps45.pred$pred, type="l", ylab="Predicted interval (#cycles)", xlab="Packet index", main="Predicted values")
 #lines(ts(57:72), ps45.pred$pred, lty='dashed', col="red" )
 
-plot(ps45, type="l", ylim=ylim)
+plot(ps45, type="l", ylim=ylim, ylab="Packet interval (peak points only)")
 lines(ps45.pred$pred, lty='dashed', col="red" )
 lines(indices, upper, lty='dotdash', col="blue" )
 lines(indices, lower, lty='dotdash', col="green" )
