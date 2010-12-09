@@ -74,7 +74,7 @@ input/output port is annotated with a number which is the number of
 \textit{tokens} the port will consume/produce each time the actor containing the
 port executes, so-called ~\textit{fires}. A token is a unit of data, it could be
 a number, a packet, and so on. We call the number annotated at an input/output
-port the consumpsion/production rate. Furthermore, for each channel, for
+port the consumption/production rate. Furthermore, for each channel, for
 instance, the channel $D$ between $A$ and $B$, in order for data will not be
 accumulated on the channel, actor $B$ has to fire twice as many as the actor $A$
 fires because actor $A$ will produce two tokens each time it fires and actor $B$
@@ -96,8 +96,8 @@ $C$ runs in another core.
 Data sent by actors located inside a cluster to actors in some other
 cluster are first \textit{pushed} into a buffer as in Figure~\ref{fig:comm}. When the buffer
 is full, data in the buffer is transmitted to another buffer located in the
-destination cluster core. The actors in the destinaton clusters get data by
-\textit{poping} data out from the receiving buffers. As a buffer size is
+destination cluster core. The actors in the destination clusters get data by
+\textit{popping} data out from the receiving buffers. As a buffer size is
 several times larger than a packet size, so when a buffer is sent, several
 continuous packets are sent and it looks like a \textit{burst} of packets. This
 accumulation mechanism could help increase the \textit{silent} intervals between
@@ -303,9 +303,9 @@ of order (1,1,1). When we use the ARIMA order of (1,1,1) for the residuals, the
 AIC is 1427.763, which is considerably difference, however, the prediction
 result is worse visually. 
 
-Use use the final model ARIMA(1,0,1)$\times$(0,1,1) with parmaters  
+Use use the final model ARIMA(1,0,1)$\times$(0,1,1) with parameters  
 
-$ar1=0.8127,ma1=0.2921, seasonal_ma1=-0.657$
+$ar1=0.8127,ma1=0.2921, seasonal\_ma1=-0.657$
 
 \begin{figure}[ht!]
 \centering
@@ -354,10 +354,16 @@ the dashed and dot-dash curves mark the confidence interval of the smoothed
 periodogram. We can see that there is now significant peaks in the periodogram
 estimate. The value of the lower confidence interval of frequency is not clearly
 larger then the periodogram estimate at other frequencies. This implies that the
-is no significant statistical frequency in the residuals~\cite{CryerTimeSeries}
+is no significant statistical frequency in the residuals~\cite{CryerTimeSeries}.
+We can also use the \textit{cross} to se the confidence interval of the smoothed
+periodogram. The length of the vertical line is the range of confidence interval
+at a given frequency in \textit{logarithm} scale. If we put the cross point of
+the cross at a point at one periodogram estimate of a given frequency, then the
+upper and lower ends of the vertical line mark the upper and lower confidence
+interval in logarithm scale.
 
 Another approach is that, given the understanding about confidence interval, we
-now want to test if the residuals between predicted values and actual values is
+now want to test if the residuals between predicted values and actual values are
 actual white noise or not.
 
 To do that, we first assume the residuals are white noise. Since the series is
@@ -378,7 +384,7 @@ define the confidence interval range of the white noise with the periodogram
 spectrum estimate is the mean of the residual periodogram spectrum estimates with
 confidence 95\%. We can see that all the periodogram estimates of the residuals
 fall the confidence interval range of white noise. This is another evidence
-saying that the residuals are indead white noise.
+saying that the residuals are indeed white noise.
 
 % \subsection{Correlation of Packet Send/Receive Times}
 % To see how the packets are delayed in traffic, we test the cross-correlation
@@ -410,7 +416,7 @@ However, in more dynamic SDF models of computation where
 production/consumption rates of ports of actors could be changed resulting in
 the change in the schedule, we need a more dynamic ARMA models. 
 
-Using the data analysis methods, we could the se that most of the time, the
+Using the data analysis methods, we could the see that most of the time, the
 communication links are idle. A transmission link could be idle for millions of
 cycles as showed in the analysis. During that time, if we could predict and turn
 off the link, we could save the leakage power of the link. That could be a
