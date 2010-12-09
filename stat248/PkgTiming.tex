@@ -46,7 +46,7 @@ from a packet being sent to its successive packet in future is large.
 \subsection{System Architecture}
 We assume a message passing multicore system composed of several processing
 cores connected using a network on chip. Processing core (CPU) has its own
-memory and is connected a router using a network interface (NI) as in
+memory and is connected a router S using a network interface (NI) as in
 Figure~\ref{fig:MulticoreNoC}.
 
 \begin{figure}[ht!]
@@ -55,9 +55,14 @@ Figure~\ref{fig:MulticoreNoC}.
 \caption{System architecture}\label{fig:MulticoreNoC}
 \end{figure}
 
+To run an application on a multicore machine, the application is
+parallelized by splitting it into several independent partitions and each
+partition is mapped to run on a separate core. Those partitions
+communicate to each other by sending packets.
+
 \subsection{Synchronous Dataflow Model of Computation}\label{sec:SDF}
 One of the important feature of streaming applications that makes it possible to
-predict the timing interval patterns of packets between partition is the
+predict the timing intervals of packets between partitions is the
 \textit{periodicity} semantic based on synchronous dataflow (SDF)~\cite{LeeSDF}
 model of computation. Figure~\ref{fig:SDF} shows a graph of a simple SDF
 application.
@@ -69,20 +74,20 @@ application.
 \end{figure}
 
 In Figure~\ref{fig:SDF}, the SDF application is composed of three processes
-called \textit{actors}. Each actor has multiple input and output ports. Each
-input/output port is annotated with a number which is the number of
+called \textit{actors}. Each actor might have multiple input and output ports.
+Each input/output port is annotated with a number which is the number of
 \textit{tokens} the port will consume/produce each time the actor containing the
 port executes, so-called ~\textit{fires}. A token is a unit of data, it could be
 a number, a packet, and so on. We call the number annotated at an input/output
-port the consumption/production rate. Furthermore, for each channel, for
-instance, the channel $D$ between $A$ and $B$, in order for data will not be
-accumulated on the channel, actor $B$ has to fire twice as many as the actor $A$
-fires because actor $A$ will produce two tokens each time it fires and actor $B$
-only consume one token each time it fires. Similarly, actor $B$ has to fire
-three times as many as the number of times actor $C$ fires. Therefore, an
+port the consumption/production rate of the port. Furthermore, for each channel,
+for instance, the channel $D$ between actors $A$ and $B$, in order for data will
+not be accumulated on the channel, actor $B$ has to fire twice as many as the actor $A$
+fires because actor $A$ will produce two tokens each time it fires on channel
+$D$ and actor $B$ only consumes one token each time it fires from channel $D$.
+Similarly, actor $B$ has to fire three times as many as the number of times actor $C$ fires. Therefore, an
 overall schedule of actors for the SDF application will be $AAABBBBBBCC$ in one
 iteration. The system could repeatedly execute the schedule again and again, and
-thus making the execution of the system periodic.
+thus making the execution behavior of the system periodic.
 
 \subsubsection{Actor Partitioning}
 An SDF application is often composed of several actors and is partitioned into
@@ -93,41 +98,38 @@ actors $A$ and $B$ runs in one core, the second cluster is composed of actor
 $C$ runs in another core.
 
 \subsubsection{Inter-cluster Communication}\label{sec:cluster_comm}
-Data sent by actors located inside a cluster to actors in some other
-cluster are first \textit{pushed} into a buffer as in Figure~\ref{fig:comm}. When the buffer
-is full, data in the buffer is transmitted to another buffer located in the
-destination cluster core. The actors in the destination clusters get data by
-\textit{popping} data out from the receiving buffers. As a buffer size is
-several times larger than a packet size, so when a buffer is sent, several
-continuous packets are sent and it looks like a \textit{burst} of packets. This
-accumulation mechanism could help increase the \textit{silent} intervals between
-packets and thus reducing the number of time to turn-on/off links and saving
-more power as turning links on/off consumes some amount of power.
+Data sent by actors located within a cluster to actors in some other
+clusters are first \textit{pushed} into a buffer as in Figure~\ref{fig:comm}.
+When the buffer is full, data in the buffer is transmitted to another buffer
+located in the memory of the core of the destination cluster. Actors in
+destination clusters get data by \textit{popping} data out from the receiving
+buffers. As a buffer size is several times larger than a packet size,  therefore
+several continuous packets are used to transmit a buffer and it looks like a
+\textit{burst} of packets. This accumulation mechanism could help increase the \textit{silent} intervals between packets and thus reducing the number of time to turn-on/off links and saving more power as turning links on/off consumes some amount of power.
 
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.8\columnwidth]{img/comm}
+\includegraphics[width=0.7\columnwidth]{img/comm}
 \caption{System architecture}\label{fig:comm}
 \end{figure}
 
-\section{Experiment}
+% \section{Experiment}
+\section{Analysis}
 \subsection{System Setup}
 We implemented a simulation framework of a distributed memory multicore using
 the SuperH processors~\cite{Stanley-MarbellSunflower} connected using a
 cycle accurate Wormsim~\cite{Wormsim} network on chip simulator with Orion power
 model~\cite{WangOrion}. We use Streamit benchmarks~\cite{ThiesStreamIt} that
-respect SDF semantics to run on our simulator to obtain message trace and power
-saving data.
+respect SDF semantics to run on our simulator to obtain packet trace.
 
-\subsection{Packet Timing Trace}
-To evaluate intervals between packets, we first run our application to obtain a
+% \subsection{Packet Timing Trace}
+We first run our application to obtain a
 network trace of packets. Based on that we use time series analysis
 techniques~\cite{BrillingerTimeSeries, ShumwayTimeSeries} to build a statistical
-model of packets based on that trace. The statistical model is then used to
-predict the future message intervals.
+model of packet intervals based on that trace. The statistical model is then
+used to predict the future packet intervals.
 
-\section{Analysis}
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=0.5\columnwidth]{img/Cluster}
@@ -137,11 +139,10 @@ predict the future message intervals.
 We use an MP3 decoder application with actor graph as in
 Figure~\ref{fig:Cluster}. In the clustering graph, we see the \textit{push} and
 \textit{pop} parameters in each cluster denoting how many times the actors in
-the cluster push/pop data to/from actors in other clusters in one iteration
-(one pass of schedule. See Section~\ref{sec:SDF}). The network trace is used is
-from cluster 4 to cluster 5. Figure~\ref{fig:packettime} shows timestamps of
-packets sent between node 4 and 5, we then take the difference of the timestamps
-to get the intervals between successive packets sent from cluster 4 to cluster 5
+that cluster push/pop data to/from actors in other clusters in one iteration
+(one pass of schedule. See Section~\ref{sec:SDF}). The network trace from
+cluster 4 to cluster 5 is used. Figure~\ref{fig:packettime} shows timestamps of
+packets sent between node 4 and 5, we then take the difference of the timestamps to get the intervals between successive packets sent from cluster 4 to cluster 5
 as in Figure~\ref{fig:s45} as the project aims at predicting the intervals between packets.
 
 \begin{figure*}[ht!]
@@ -159,7 +160,7 @@ as in Figure~\ref{fig:s45} as the project aims at predicting the intervals betwe
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.8\columnwidth]{img/s45All}
+\includegraphics[width=0.7\columnwidth]{img/s45All}
 \caption{Original interval series}\label{fig:s45All}
 \end{figure}
 
@@ -179,8 +180,8 @@ with $\mu_t=E[Y_t]$.
 
 The autocorrelation of the series in Figure~\ref{fig:s45All} shows strong
 correlations between data points at lags that are multiple of 8. The raw
-periodogram estimate of spectrums also shows high peaks at frequencies that are
-multiple of $\frac{1}{8}$. Both of the above criteria exhibit that the interval
+periodogram estimate also shows high peaks at frequencies that are
+multiple of $\frac{1}{8}$. Both of the above exhibit that the interval
 series has seasonal behaviour with period of 8. We compute the seasonal
 components by computing the mean of data points at lag 8. The
 Figure~\ref{fig:s45res} shows the residuals of the interval series after
@@ -192,15 +193,15 @@ most of the series is zero, non-zero points only appear at the lag of 8. This
 observation exhibits that the large intervals between two successive packets are
 actually the interval between the last packet of a former \textit{burst} of data
 (See Section~\ref{sec:cluster_comm}) and the first packet of its latter burst.
-The intervals between packets in of a burst are constant. Therefore, now we only
-consider the \textit{peak} intervals that are intervals that when we remove
+The intervals between packets within of a burst are constant. Therefore, now we
+only consider the \textit{peak} intervals, the intervals when we remove
 the seasonal components, the residual is \textit{not} zero. For example, in
-Figure~\ref{fig:s45All} peak intervals are points that are higher than the flat
+Figure~\ref{fig:s45} peak intervals are points that are higher than the flat
 bottom line.
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.8\columnwidth]{img/s45res}
+\includegraphics[width=0.7\columnwidth]{img/s45res}
 \caption{Residual series after removing seasonal}\label{fig:s45res}
 \end{figure}
 
@@ -259,21 +260,20 @@ the most suitable parameters.
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.8\columnwidth]{img/s45peak}
+\includegraphics[width=0.7\columnwidth]{img/s45peak}
 \caption{Periodogram and ACF of peak intervals}\label{fig:s45peak}
 \end{figure}
 
 \subsubsection{Problem with Conventional ARMA}
 Although ARMA is used to predict future values of a series based on
-previously observed sequence of the series, the interval series of packets has
-we use has a period of 8 as in the ACF in Figure~\ref{fig:s45peak}. This large
-period makes it difficult to fit our series with an ARMA model since the order of the AR
-part greater or at least equal to 8. We could not make the fitting process
-converge. To solve this problem, we use the Seasonal ARIMA (SARIMA).
+previously observed sequence of the series, the peak interval series of packets
+has a period of 8 as in the ACF in Figure~\ref{fig:s45peak}. This large period
+makes it difficult to fit the series with an ARMA model since the order of the
+AR part greater or at least equal to 8. We could not make the fitting process converge. To solve this problem, we use the Seasonal ARIMA (SARIMA).
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.8\columnwidth]{img/tsdiag_fit}
+\includegraphics[width=0.7\columnwidth]{img/tsdiag_fit}
 \caption{Diagnostic of the fitted ARMA}\label{fig:tsdiag_fit}
 \end{figure}
 
@@ -292,10 +292,10 @@ and thus, we use the order (0,1,1) for the seasonal with period of 8.
 \begin{equation}
 S_t - S_{t-8} = \alpha v_{t-1} + v_t
 \end{equation}
-with $v_t$ is white noise and $w_t$ and $v_t$ are not correlated. 
-The AIC is about 1454.352 for other ARIMA orders of (2,0,1) or for the seasonal
-of order (1,1,1). When we use the ARIMA order of (1,1,1) for the residuals, the
-AIC is 1427.763, which is considerably difference, however, the prediction
+with $v_t$ is white noise, $w_t$ and $v_t$ are not correlated. 
+The AIC is about 1454.352 for other ARIMA order of (2,0,1) or for the seasonal
+of order (1,1,1). When we use the ARIMA order of (1,1,1), the
+AIC is 1427.763, which is considerably smaller, however, the prediction
 result is worse visually. 
 
 We use the final model ARIMA(1,0,1)$\times$(0,1,1) with parameters  
@@ -309,48 +309,46 @@ $ar1=0.8127,ma1=0.2921, seasonal\_ma1=-0.657$
 \end{figure}
 
 \subsection{Testing Residuals}
-When we obtain the residuals from the difference between observation and
-prediction data, it is our interest to test if the residuals is indeed white
-noise or it still has some frequency components in it. We can see the
+When we obtain the residuals from the difference between observed and
+predicted data, it is our interest to test if the residuals is indeed white
+noise or it still has some frequency components. We can see the
 autocorrelation of the residuals in Figure~\ref{fig:predictions45}, there is no
-significant correlation except at 0. This indicates that the residuals
-potentially are white noise.
+significant correlation except at lag 0. This indicates that the residuals
+potentially is white noise.
 
 Another way to test if the residual series is white noise is by comparing the
 smoothed periodogram estimate with confidence interval of white noise.
 
 \subsubsection{Confidence Interval}
-From~\cite{bloomfieldFourierTimeSeries}, if $\hat{s}(f)$ is a spectral estimate
-at frequency $f$: 
+From~\cite{bloomfieldFourierTimeSeries}, if $\hat{s}(f)$ is a periodogram
+estimate at frequency $f$: 
 \begin{equation}
 \hat{s}(f)=\sum_{k=-m}^mw_kI(f'-\frac{k}{n})
 \end{equation}
-where $f'$ is the Fourier frequency closest to $f$ and $n$ is the number length
+where $f'$ is the Fourier frequency closest to $f$ and $n$ is the length
 of the series, $w_m$ are weights of the Daniel filter used to smooth the
-periodogram.
-
-and $s(f)$ is the true and unknown value of the spectrum, then:
+periodogram. If $s(f)$ is the true and unknown value of the spectrum:
 \begin{equation}
 var\{\hat{s}(f)\}=s(f)^2\sum_{k=-m}^mw_k^2
 \end{equation}
 Then
 $\frac{\nu \hat{s}(f)}{s(f)}$ is approximately $\chi^2$ distributed with
-$\nu=\sum_{k=-m}^mw_k^2$ is the degree of freedom. Therefore for an approximate
-$100(1-\alpha)\%$ confidence interval, we have:
+$\nu=\frac{2}{\sum_{k=-m}^mw_k^2}$ that is the degree of freedom. Therefore for
+an approximate $100(1-\alpha)\%$ confidence interval, we have:
 \begin{equation}\label{eqn:confidenceInterval}
 \frac{\nu\hat{s}(f)}{\chi_{\nu}^2(1-\alpha/2)}\leq s(f)\leq
 \frac{\nu\hat{s}(f)}{\chi_{\nu}^2(\alpha/2)}
 \end{equation}
-which means that $100(1-\alpha)\%$ of true frequency false into the confidence
-interval.
+which means that $100(1-\alpha)\%$ of true periodogram estimate at frequency $f$
+falls within the confidence interval.
 \subsubsection{White Noise Testing}
 In the smoothed periodogram of the residuals in Figure~\ref{fig:predictions45},
 the dashed and dot-dash curves mark the confidence interval of the smoothed
 periodogram. We can see that there are no significant peaks in the periodogram
-estimate. The value of the lower confidence interval of frequency is not clearly
-larger then the periodogram estimate at other frequencies. This implies that
-there is no significant statistical frequency in the
-residuals~\cite{CryerTimeSeries}. We can also use the \textit{cross} to se the
+estimate. The value of the lower confidence interval at any frequency is not
+clearly larger then the periodogram estimate at other frequencies. This implies that
+there is no statistically significant frequency in the
+residuals~\cite{CryerTimeSeries}. We can also use the \textit{cross} to see the
 confidence interval of the smoothed periodogram. The length of the vertical line
 is the range of confidence interval at a given frequency in \textit{logarithm} scale. If we put the cross point of
 the cross at a point at one periodogram estimate of a given frequency, then the
@@ -359,27 +357,25 @@ interval in logarithm scale.
 
 Another approach is that, given the understanding about confidence interval, we
 now want to test if the residuals between predicted values and actual values are
-actual white noise or not.
-
-To do that, we first assume the residuals are white noise. Since the series is
-white noise, then we then take the mean of the smoothed spectrum of the series
-as the flat spectrum of the series, say $m$. From that flat spectrum of the
-series, we then compute the upper and lower limits of the confidence interval:
+actual white noise or not. To do that, we first assume the residuals is white
+noise. Since the series is white noise, then we then take the mean of the
+smoothed periodogram estimate of the series, say $m$, as white noise has flat
+spectrum. From that mean periodogram estimate of the residuals, we compute
+the upper and lower limits of the confidence interval:
 \begin{align}
 U &= \frac{\nu m}{\chi^2(\alpha/2)}\\
 L &= \frac{\nu m}{\chi^2(100-\alpha/2)}
 \end{align}
 
 If we use confidence interval of $95\%$, then there should be no more than $5\%$
-of the periodogram of the frequencies of the residual series fall outside of
-that upper and lower limit lines.
+of the periodogram estimate of the residual series falls outside of that upper
+and lower limit lines.
 
 In Figure~\ref{fig:predictions45}, the upper read line and lower green line
 define the confidence interval range of the white noise with the periodogram
-spectrum estimate is the mean of the residual periodogram spectrum estimates with
-confidence 95\%. We can see that all the periodogram estimates of the residuals
-fall the confidence interval range of white noise. This is another evidence
-saying that the residuals are indeed white noise.
+estimate is the mean of the residual periodogram estimates with confidence 95\%.
+We can see that all the periodogram estimates of the residuals fall inside the
+confidence interval range of white noise. This is another evidence saying that the residuals are indeed white noise.
 
 % \subsection{Correlation of Packet Send/Receive Times}
 % To see how the packets are delayed in traffic, we test the cross-correlation
@@ -403,7 +399,7 @@ series}\label{fig:results45}
 \end{figure}
 
 \section{Conclusion and Future Work}
-The main motivation for this project is to use ARMA technique to predict a
+The main motivation for this project is to use ARMA to predict a
 periodic process based on the observation that ARMA could be very suitable for
 periodic processes and streaming applications based on SDF model of computation
 is semantically periodic. We have showed that it possible to predict the
