@@ -269,8 +269,8 @@ converge. To solve this problem, we use the Seasonal ARIMA (SARIMA).
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.8\columnwidth]{img/predictions45}
-\caption{Residual series after removing seasonal}\label{fig:predictions45}
+\includegraphics[width=0.8\columnwidth]{img/tsdiag_fit}
+\caption{Residual series after removing seasonal}\label{fig:tsdiag_fit}
 \end{figure}
 
 \subsubsection{Seasonal ARIMA}
@@ -288,20 +288,24 @@ S_t = S_{t-8}+v_t
 \end{equation}
 with $v_t$ is white noise and $w_t$ and $v_t$ are not correlated.
 
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.8\columnwidth]{img/predictions45}
+\caption{Residuals after removing predicted values}\label{fig:predictions45}
+\end{figure}
+
 \subsection{Testing Residuals}
 When we obtain the residuals from the difference between observation and
-prediction data, it is our interest to test if the residuals is really white
-noise or it still has some frequency components in it by comparing the smoothed
-periodogram estimate with confidence interval of white noise.
+prediction data, it is our interest to test if the residuals is indeed white
+noise or it still has some frequency components in it. We can see the
+autocorrelation of the residuals in Figure~\ref{fig:predictions45}, there is no
+significant correlation except at 0. This indicates that the residuals
+potentially are white noise.
+
+Another way to test if the residual series is white noise is by comparing the
+smoothed periodogram estimate with confidence interval of white noise.
 
 \subsubsection{Confidence Interval}
-% \begin{equation}
-% \hat{s}(f)=\sum_{k=-m}^mW
-% \end{equation}
-% 
-% \begin{equation}
-% var\{\hat{s} (f)\}=s(f)^2\sum_
-% \end{equation}
 From~\cite{bloomfieldFourierTimeSeries}, if $\hat{s}(f)$ is a spectral estimate
 at frequency $f$: 
 \begin{equation}
@@ -326,9 +330,16 @@ $100(1-\alpha)\%$ confidence interval, we have:
 which means that $100(1-\alpha)\%$ of true frequency false into the confidence
 interval.
 \subsubsection{White Noise Testing}
-Given the understanding about confidence interval, we now want to test if the
-residuals between predicted values and actual values is actual white noise or
-not.
+In the smoothed periodogram of the residuals in Figure~\ref{fig:predictions45},
+the dashed and dot-dash curves mark the confidence interval of the smoothed
+periodogram. We can see that there is now significant peaks in the periodogram
+estimate. The value of the lower confidence interval of frequency is not clearly
+larger then the periodogram estimate at other frequencies. This implies that the
+is no significant statistical frequency in the residuals~\cite{CryerTimeSeries}
+
+Another approach is that, given the understanding about confidence interval, we
+now want to test if the residuals between predicted values and actual values is
+actual white noise or not.
 
 To do that, we first assume the residuals are white noise. Since the series is
 white noise, then we then take the mean of the smoothed spectrum of the series
@@ -343,13 +354,24 @@ If we use confidence interval of $95\%$, then there should be no more than $5\%$
 of the periodogram of the frequencies of the residual series fall outside of
 that upper and lower limit lines.
 
-Figure~\ref{fig:predictions45}
+In Figure~\ref{fig:predictions45}, the upper read line and lower green line
+define the confidence interval range of the white noise with the periodogram
+spectrum estimate is the mean of the residual periodogram spectrum estimates with
+confidence 95\%. We can see that all the periodogram estimates of the residuals
+fall the confidence interval range of white noise. This is another evidence
+saying that the residuals are indead white noise.
 
 % \subsection{Correlation of Packet Send/Receive Times}
 % To see how the packets are delayed in traffic, we test the cross-correlation
 % between the time packets sent at source and the time packets received at
 % destination.
 
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.8\columnwidth]{img/results45}
+\caption{Experimental, predicted series}\label{fig:results45}
+\end{figure}
 
 \section{Conclusion}
 The main motivation for this project is to use ARMA technique to predict a
