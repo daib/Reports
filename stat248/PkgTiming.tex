@@ -121,9 +121,9 @@ saving data.
 
 \subsection{Packet Timing Trace}
 To evaluate intervals between Packets, we first run our application to obtain a
-network trace of messages. Based on that we use time series analysis
+network trace of packets. Based on that we use time series analysis
 techniques~\cite{BrillingerTimeSeries, ShumwayTimeSeries} to build a statistical
-model of messages based on that trace. The statistical model is then used to
+model of packets based on that trace. The statistical model is then used to
 predict the future message intervals.
 
 \section{Analysis}
@@ -197,8 +197,10 @@ observation exhibits that the large intervals between two successive packets are
 actually the interval between the last packet of a former \textit{burst} of data
 (See Section~\ref{sec:cluster_comm}) and the first packet of its latter burst.
 The intervals between packets in of a burst are constant. Therefore, now we only
-consider the peaks in Figure~\ref{fig:s45All} (the interval between the last packet of
-previous burst and first packet of the next burst).
+consider the \textit{peak} intervals which are intervals that when we remove
+the seasonal components, the residual is \textit{not} zero. For example, in
+Figure~\ref{fig:s45All} peak intervals are points that are higher than the flat
+bottom line.
 
 \begin{figure}[ht!]
 \centering
@@ -259,10 +261,16 @@ the most suitable parameters.
 \theta|Y_T,\ldots, Y_0)
 \end{equation}
 
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.8\columnwidth]{img/s45peak}
+\caption{Periodogram and ACF of peak intervals}\label{fig:s45peak}
+\end{figure}
+
 \subsubsection{Problem with Conventional ARMA}
 Although ARMA is used to predict future values of a series based on
 previously observed sequence of the series, the interval series of Packets has
-we use has a period of 8 as in the ACF in Figure~\ref{fig:acfs45}. This large
+we use has a period of 8 as in the ACF in Figure~\ref{fig:s45peak}. This large
 period makes it difficult to fit our series with an ARMA model since the order of the AR
 part greater or at least equal to 8. The we could not make the fitting process
 converge. To solve this problem, we use the Seasonal ARIMA (SARIMA).
@@ -276,17 +284,27 @@ converge. To solve this problem, we use the Seasonal ARIMA (SARIMA).
 \subsubsection{Seasonal ARIMA}
 We model the input data as follow:
 \begin{equation}
-Y_t = \alpha Y_t+\beta Y_{t-8}+S_t+w_t
+%Y_t = \alpha T_{t-1}+\beta Y_{t-8}+S_t+w_t
+Y_t = \varphi Y_{t-1}+S_t+ \theta w_{t-1}+w_t
 \end{equation}
-where $S_t$ is the seasonal component and we again model it as a ARIMA process
-with order (1,1,1), $w_t$ is white noise. The order (1,0,1) is used for the
-seasonal, the fitting process does not converge. This indicates that the seasonal process is
-non-stationary, which means that the seasonal component does not stay the same,
-however, it changes slowly over time by a random walk.
+where $S_t$ is the seasonal component and $w_t$ is white noise. When order
+(1,0,1) is used for the seasonal, the fitting process does not converge. This implies that the seasonal
+process is non-stationary, which means that the seasonal does not
+stay the same, however, it changes slowly over time by a random walk. To solve
+this problem, we could differentiate the seasonal to make it stationary,
+and thus, we use the order (0,1,1) for the seasonal with period of 8.
 \begin{equation}
-S_t = S_{t-8}+v_t
+S_t - S_{t-8} = \alpha v_{t-1} + v_t
 \end{equation}
-with $v_t$ is white noise and $w_t$ and $v_t$ are not correlated.
+with $v_t$ is white noise and $w_t$ and $v_t$ are not correlated. 
+The AIC is about 1454.352 for other ARIMA orders of (2,0,1) or for the seasonal
+of order (1,1,1). When we use the ARIMA order of (1,1,1) for the residuals, the
+AIC is 1427.763, which is considerably difference, however, the prediction
+result is worse visually. 
+
+Use use the final model ARIMA(1,0,1)$\times$(0,1,1) with parmaters  
+
+$ar1=0.8127,ma1=0.2921, seasonal_ma1=-0.657$
 
 \begin{figure}[ht!]
 \centering
@@ -369,18 +387,19 @@ saying that the residuals are indead white noise.
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.8\columnwidth]{img/results45}
+\includegraphics[width=0.6\columnwidth]{img/results45}
 \caption{Experimental, predicted series}\label{fig:results45}
 \end{figure}
 
 \section{Conclusion}
 The main motivation for this project is to use ARMA technique to predict a
 periodic process based on the observation that ARMA could be very suitable for
-periodic processes.
+periodic processes and streaming applications based on SDF model of computation
+is semantically periodic. We have showed that it possible to predict the
+intervals between packets sent from one cluster to another cluster using ARMA. 
+
 \begin{itemize}
   \item Parameter changed overtime
-  \item Draw the variance and predicted values
-  \item AIC
 \end{itemize}
 
 \bibliographystyle{plain}

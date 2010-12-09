@@ -17,12 +17,7 @@ par(mfrow=c(3,1))
 
 acf(s45, main="Autocorrelation of packet interval")
 
-#dev.print(device=postscript, "acfs45.eps", onefile=FALSE, horizontal=FALSE)
-
 spectrum(s45, main="Raw spectrum of original series")
-
-#dev.print(device=postscript, "spectrums45.eps", onefile=FALSE, horizontal=FALSE)
-
 
 ms45 <- matrix(s45,ncol=8, byrow=TRUE)
 
@@ -49,11 +44,20 @@ dev.print(device=postscript, "s45res.eps", onefile=FALSE, horizontal=FALSE)
 #take only the peaks
 ps45 = ms45[2:nrow(ms45),8]
 
+#par(mfrow=c(2,1))
+plot(s45, type="l", ylab="Peak intervals (#cycles)", main="Peak interval series")
+spectrum(s45, main="Raw spectrum the high peaks  series")
+acf(s45, lag.max=100, main="Autocorrelation of the high peak series")
+
+dev.print(device=postscript, "s45peak.eps", onefile=FALSE, horizontal=FALSE)
+
+#par(mfrow=c(3,1))
+
 fit_end = 56
 predict_end = length(ps45) 
 
 #SARIMA fitting
-fss45 <- arima(ps45[1:fit_end], order=c(1,0,1), seasonal=list(order=c(1,1,1), period = 8))
+fss45 <- arima(ps45[1:fit_end], order=c(1,0,1), seasonal=list(order=c(0,1,1), period = 8))
 ps45.pred = predict(fss45, n.ahead = (predict_end-fit_end))
 ps45.res = ps45[(fit_end+1):predict_end]-ps45.pred$pred
 
