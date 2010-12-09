@@ -73,15 +73,16 @@ called \textit{actors}. Each actor has multiple input and output ports. Each
 input/output port is annotated with a number which is the number of
 \textit{tokens} the port will consume/produce each time the actor containing the
 port executes, so-called ~\textit{fires}. A token is a unit of data, it could be
-a number, a Packet, e.t.c. Furthermore, for each channel, for instance, the
-channel $D$ between $A$ and $B$, in order for data will not be accumulated on
-the channel, actor $B$ has to fire twice as many as the actor $A$ fires because
-actor $A$ will produce two tokens each time it fires and actor $B$ only consume
-one token each time it fires. Similarly, actor $B$ has to fire three times as
-many as the number of times actor $C$ fires. Therefore, an overall schedule of
-actors for the SDF application will be $AAABBBBBBCC$ in one iteration. The
-system could repeatedly execute the schedule again and again, and thus making
-the execution of the system periodic.
+a number, a packet, and so on. We call the number annotated at an input/output
+port the consumpsion/production rate. Furthermore, for each channel, for
+instance, the channel $D$ between $A$ and $B$, in order for data will not be
+accumulated on the channel, actor $B$ has to fire twice as many as the actor $A$
+fires because actor $A$ will produce two tokens each time it fires and actor $B$
+only consume one token each time it fires. Similarly, actor $B$ has to fire
+three times as many as the number of times actor $C$ fires. Therefore, an
+overall schedule of actors for the SDF application will be $AAABBBBBBCC$ in one
+iteration. The system could repeatedly execute the schedule again and again, and
+thus making the execution of the system periodic.
 
 \subsubsection{Actor Partitioning}
 An SDF application is often composed of several actors and is partitioned into
@@ -384,23 +385,36 @@ saying that the residuals are indead white noise.
 % between the time packets sent at source and the time packets received at
 % destination.
 
+\subsection{Result}
+Figure~\ref{fig:results45} shows the result if predicted values in red. The
+actual values lies in between the 95\% upper confidence, in blue, lower of
+confidence,in green, limits. The confidence limits are computed as follows:
+\begin{align}
+upper\_limit = predicted\_value + 1.96*standard_error\\
+lower\_limit = predicted\_value - 1.96*standard_error
+\end{align}
 
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=0.6\columnwidth]{img/results45}
-\caption{Experimental, predicted series}\label{fig:results45}
+\caption{Actual, predicted and confidence limit series}\label{fig:results45}
 \end{figure}
 
-\section{Conclusion}
+\section{Conclusion and Future Work}
 The main motivation for this project is to use ARMA technique to predict a
 periodic process based on the observation that ARMA could be very suitable for
 periodic processes and streaming applications based on SDF model of computation
 is semantically periodic. We have showed that it possible to predict the
-intervals between packets sent from one cluster to another cluster using ARMA. 
+intervals between packets sent from one cluster to another cluster using ARMA.
+However, in more dynamic SDF models of computation where
+production/consumption rates of ports of actors could be changed resulting in
+the change in the schedule, we need a more dynamic ARMA models. 
 
-\begin{itemize}
-  \item Parameter changed overtime
-\end{itemize}
+Using the data analysis methods, we could the se that most of the time, the
+communication links are idle. A transmission link could be idle for millions of
+cycles as showed in the analysis. During that time, if we could predict and turn
+off the link, we could save the leakage power of the link. That could be a
+considerable amount of power.
 
 \bibliographystyle{plain}
 \bibliography{PkgTiming}

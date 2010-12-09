@@ -85,11 +85,7 @@ u = ps45.spec.mean * df /U
 
 ps45.spec.raw = spectrum(ps45.res, plot=FALSE)
 
-#ylim = range(ps45.spec$spec, ps45.l, ps45.u, l, u, ps45.spec.raw$spec)
 ylim = range(ps45.spec$spec, ps45.l, ps45.u, l, u)
-
-#plot(ps45.spec.raw, type="l", ylim=ylim)
-#lines(ps45.spec$freq, ps45.spec$spec,ylim=ylim, type="l")
 
 plot(ps45.spec,ylim=ylim, main="Smoothed periodogram", type="l")
 lines(ps45.spec$freq, ps45.l, lty='dashed')
@@ -108,12 +104,10 @@ indices = c((fit_end+1):predict_end)
 upper = indices
 lower = upper 
 
-upper =  ps45.pred$pred + 2*ps45.pred$se 
-lower =  ps45.pred$pred - 2*ps45.pred$se 
+upper =  ps45.pred$pred + 1.96*ps45.pred$se 
+lower =  ps45.pred$pred - 1.96*ps45.pred$se 
 
 ylim=range(upper, lower, ps45.pred$pred, ps45)
-#plot(ps45.pred$pred, type="l", ylab="Predicted interval (#cycles)", xlab="Packet index", main="Predicted values")
-#lines(ts(57:72), ps45.pred$pred, lty='dashed', col="red" )
 
 plot(ps45, type="l", ylim=ylim, ylab="Packet interval (peak points only)")
 lines(ps45.pred$pred, lty='dashed', col="red" )
