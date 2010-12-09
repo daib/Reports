@@ -47,22 +47,26 @@ acf(s45.res, lag.max=100, main="Autocorrelation of the residuals")
 dev.print(device=postscript, "s45res.eps", onefile=FALSE, horizontal=FALSE)
 
 #take only the peaks
-ps45 = ms45[,8]
+ps45 = ms45[2:nrow(ms45),8]
 
-#SARIMA
-fss45 <- arima(ps45[1:56], order=c(1,0,1), seasonal=list(order=c(1,1,1), period = 8))
-ps45.pred = predict(fss45, n.ahead = 16)
-ps45.res = ps45[57:72]-ps45.pred$pred
+fit_end = 56
+predict_end = length(ps45) 
+
+#SARIMA fitting
+fss45 <- arima(ps45[1:fit_end], order=c(1,0,1), seasonal=list(order=c(1,1,1), period = 8))
+ps45.pred = predict(fss45, n.ahead = (predict_end-fit_end))
+ps45.res = ps45[(fit_end+1):predict_end]-ps45.pred$pred
+
+tsdiag(fss45)
+dev.print(device=postscript, "tsdiag_fit.eps", onefile=FALSE, horizontal=FALSE)
 
 par(mfrow=c(3,1))
-plot(ps45.pred$pred, type="l", ylab="Predicted interval (#cycles)", xlab="Packet index", main="Predicted values")
 plot(ps45.res, type="l", ylab="Predicted interval residuals", xlab="Packet index", main="Predicted residuals")
 acf(ps45.res, main="Autocorrelation of residuals")
 
-dev.print(device=postscript, "predictions45.eps", onefile=FALSE, horizontal=FALSE)
-
 k = kernel("daniell", 7) ##meaning m=4, i.e. L=2m+1=9
 ps45.spec = spec.pgram(ps45.res, k, taper=0, detrend=FALSE, demean=TRUE, log="no", plot=FALSE)
+
 
 df = ps45.spec$df
 U = qchisq(0.025, df)
@@ -83,9 +87,33 @@ ylim = range(ps45.spec$spec, ps45.l, ps45.u, l, u)
 #plot(ps45.spec.raw, type="l", ylim=ylim)
 #lines(ps45.spec$freq, ps45.spec$spec,ylim=ylim, type="l")
 
-plot(ps45.spec,ylim=ylim, type="l")
+plot(ps45.spec,ylim=ylim, main="Smoothed periodogram", type="l")
 lines(ps45.spec$freq, ps45.l, lty='dashed')
 lines(ps45.spec$freq, ps45.u, lty='dotdash' )
 
 abline(h=u, col="red")
 abline(h=l, col="green")
+
+dev.print(device=postscript, "predictions45.eps", onefile=FALSE, horizontal=FALSE)
+
+
+par(mfrow=c(1,1))
+
+
+indices = c((fit_end+1):predict_end)
+upper = indices
+lower = upper 
+
+upper =  ps45.pred$pred + 2*ps45.pred$se 
+lower =  ps45.pred$pred - 2*ps45.pred$se 
+
+ylim=range(upper, lower, ps45.pred$pred, ps45)
+#plot(ps45.pred$pred, type="l", ylab="Predicted interval (#cycles)", xlab="Packet index", main="Predicted values")
+#lines(ts(57:72), ps45.pred$pred, lty='dashed', col="red" )
+
+plot(ps45, type="l", ylim=ylim)
+lines(ps45.pred$pred, lty='dashed', col="red" )
+lines(indices, upper, lty='dotdash', col="blue" )
+lines(indices, lower, lty='dotdash', col="green" )
+
+dev.print(device=postscript, "results45.eps", onefile=FALSE, horizontal=FALSE)

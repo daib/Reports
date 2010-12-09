@@ -196,13 +196,17 @@ most of the series is zero, non-zero points only appear at the lag of 8. This
 observation exhibits that the large intervals between two successive packets are
 actually the interval between the last packet of a former \textit{burst} of data
 (See Section~\ref{sec:cluster_comm}) and the first packet of its latter burst.
-The intervals between packets in a burst are constant.
+The intervals between packets in of a burst are constant. Therefore, now we only
+consider the peaks in Figure~\ref{fig:s45All} (the interval between the last packet of
+previous burst and first packet of the next burst).
 
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=0.8\columnwidth]{img/s45res}
 \caption{Residual series after removing seasonal}\label{fig:s45res}
 \end{figure}
+
+
 
 \subsection{ARMA and Prediction}
 Autoregressive moving average (ARMA)~\cite{BoxTimeSeries, FalkStatSAS}
@@ -263,6 +267,12 @@ period makes it difficult to fit our series with an ARMA model since the order o
 part greater or at least equal to 8. The we could not make the fitting process
 converge. To solve this problem, we use the Seasonal ARIMA (SARIMA).
 
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.8\columnwidth]{img/predictions45}
+\caption{Residual series after removing seasonal}\label{fig:predictions45}
+\end{figure}
+
 \subsubsection{Seasonal ARIMA}
 We model the input data as follow:
 \begin{equation}
@@ -282,7 +292,7 @@ with $v_t$ is white noise and $w_t$ and $v_t$ are not correlated.
 When we obtain the residuals from the difference between observation and
 prediction data, it is our interest to test if the residuals is really white
 noise or it still has some frequency components in it by comparing the smoothed
-periodogram with confidence interval of white noise.
+periodogram estimate with confidence interval of white noise.
 
 \subsubsection{Confidence Interval}
 % \begin{equation}
@@ -333,7 +343,7 @@ If we use confidence interval of $95\%$, then there should be no more than $5\%$
 of the periodogram of the frequencies of the residual series fall outside of
 that upper and lower limit lines.
 
-Figure~\ref{fig:}
+Figure~\ref{fig:predictions45}
 
 % \subsection{Correlation of Packet Send/Receive Times}
 % To see how the packets are delayed in traffic, we test the cross-correlation
@@ -349,6 +359,7 @@ periodic processes.
 \begin{itemize}
   \item Parameter changed overtime
   \item Draw the variance and predicted values
+  \item AIC
 \end{itemize}
 
 \bibliographystyle{plain}
