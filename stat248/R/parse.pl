@@ -5,15 +5,13 @@ use strict;
 my $trace = "trace";
 my $map = "map.txt";
 my $taskGraph = "task_graph.txt";
-my $action = "send";
+my $action = "sends";
 my $R = "plot.R";
 my $graph = "graphs";
 
-#mao from thread to ip
+#map from thread to ip
 my %threadIP = ();
-
-#my $src = 1;
-#my $dst = 2;
+my %flowBufSpace = ();
 
 if ($#ARGV > 1)
 {
@@ -44,10 +42,13 @@ open TASKGRAPH, $taskGraph or die $!;
 
 while(<TASKGRAPH>)
 {
-    if(/^(\d+)\s+(\d+)/)
+    if(/^(\d+)\s+(\d+)\s+(\d+)/)
     {
         my $src = $threadIP{$1};
         my $dst = $threadIP{$2};
+        my $bufSize = $3;
+        my $currentSent = 0;
+
         print "$1\[$src\] $2\[$dst\]\n";
 
         seek(TRACE, 0, 0);
@@ -60,7 +61,12 @@ while(<TASKGRAPH>)
         {
             if(/Time\s+(\d+)\s+node\s+$src\s+$action\s+(\d+)\s+to\s+$dst/)
             {
-                print FLOW "$1 $2\n";
+                $currentSent += ($2 - 1); 
+                if($currentSent >= $bufSize)
+                {
+                    print FLOW "$1 $currentSent\n";
+                    $currentSent = 0;
+                }
             }
         }
        
@@ -96,4 +102,4 @@ close R;
 
 close TRACE;
 
-system "ps2pdf $graph.ps $graph.pdf; open $graph.pdf";
+system "r -f $R; ps2pdf $graph.ps $graph.pdf; open $graph.pdf";
