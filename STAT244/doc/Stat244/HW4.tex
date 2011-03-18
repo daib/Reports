@@ -1,0 +1,179 @@
+%%This is a very basic article template.
+%%There is just one section and two subsections.
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[colorlinks]{hyperref}
+\usepackage{listings}
+\usepackage{fancyvrb }
+\usepackage{subfigure}
+
+
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+\newenvironment{mylisting}
+ {\begin{list}{}{\setlength{\leftmargin}{1em}}\item\scriptsize\bfseries}
+ {\end{list}}
+
+ \newenvironment{mytinylisting}
+ {\begin{list}{}{\setlength{\leftmargin}{1em}}\item\tiny\bfseries}
+ {\end{list}}
+
+
+\title{STAT244 - Statistical Computing\\Homework 4}
+\author{Dai Bui}
+\begin{document}
+
+\date{}
+\maketitle
+\section{Binary Tree}
+\subsection{Overview}
+In this problem, we implement a simple (non self-balancing) binary tree and
+compare the execution time with a self-balancing binary tree based on a random
+1200 integer numbers input.
+
+Binary tree data structure can help finding data faster than normal linked list
+data structure. However, the speed of inserting and finding data in a binary
+tree also depends on the input data that form the run-time structure of the
+tree. To evaluate this effect, we will compare the execution time of two
+implementations, a normal (not self-balancing tree) and a self-balancing tree.
+We test those implementations with a random input of 1200 integer numbers in
+both sorted and unsorted fashions.
+
+
+\subsection{Implementation}
+We implemented a program with source code listed in
+Appendix~\ref{sec:bintreeCode}. The program uses Linux real-time clock library
+to measure the execution time in nano-second. The output of the
+program for a data sequence of 1200 random integer number listed in
+Appendix~\ref{eqn:bintreeInputfile} is as follows:
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/bintreeoutput.txt}
+
+\subsection{Conclusion}
+As we can see that, a non-self-balancing tree performs better than
+a self-balancing tree  on a unsorted sequence. This is because a self-balancing
+tree has to spend time keeping its runtime structure balanced.
+
+However, for a sorted sequence, a non-self-balancing tree performs rather bad.
+It is 10 times slower than a balancing tree on the same sorted sequence. This
+is because a sorted sequence will cause a non-self-balancing tree to become a
+simple linked list, there for it takes more time to traverse the tree to search
+for suitable node at the end of the tree (as this is a sorted sequence).
+Meanwhile, the performance of a self-balancing tree is improved over its
+performance on a unsorted sequence. This is perhaps because it takes a
+self-balancing tree less time to maintain its balanced structure on a sorted
+sequence than on an unsorted sequence.
+
+As we can see that keeping a tree balanced is very important. Then since, a
+non-self-balancing tree performs better than a self-balancing tree  on a
+unsorted sequence. We can see that a random unsorted sequence can keep a
+tree pretty balanced.
+
+As there are many duplicated numbers in the input sequence, our program has
+detected those duplications but we do not list that output here as it takes
+lots of space.
+
+\section{Analysis of Variance - ANOVA}
+\subsection{Overview}
+This problem exposes me to a new aspect that I was not used to called data
+analysis~\cite{MasonDataAnalysis, KeppelDataAnalysis}. Basically, when there are
+several factors with multiple levels contributing to one output result, we
+would like to analyse and measure the main effect of each factor as well as the
+joint effect between factors.
+
+In this problem, we implement a \textit{balanced} multi-factor analysis program.
+The details of the analysis technique is described in several sources such
+as Chaper 6 in ~\cite{MasonDataAnalysis} and Chapter
+13 in~\cite{KeppelDataAnalysis}. Page 179 in~\cite{MasonDataAnalysis} has a
+clear summary of the computation methods for three factors, see
+Figure~\ref{fig:threeFactors}. From that, we are able to generalize the
+computation method for more factors.
+
+ \begin{figure}[ht!]
+\centering
+\includegraphics[width=0.95\columnwidth]{hw4files/threeFactorAnalysis.png}
+\caption{Computing method for three-factor analysis.}
+\label{fig:threeFactors}
+\end{figure}
+
+\subsection{Implementation}
+We implemented a program using a self-balancing binary tree to store data
+structure. Our program can theoretically handle an infinite number of factors.
+Users can also limit the number of factors used in the analysis. We test our
+program on a data input file listed in Appendix~\ref{sec:dataANOVA}. We also
+used \texttt{dcdflib} to find the F probability. When doing this problem, I
+learned one interesting technique to use a powerset of those factors to generate
+all possible joint effects of those factors.
+
+\subsection{Results and Conclusion}
+The output of our program for the input data in Appendix~\ref{sec:dataANOVA} is
+the same as the output from SAS for analysis of both three and two factors.
+\subsubsection{Three-factor Analysis}
+Following is the output of the program for three factors.
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/threeFactors}
+
+which is numerically similar to that of SAS.
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/a3.txt}
+\subsubsection{Limiting to Two-factor Analysis}
+For the same data input, we do ANOVA for only 2 first factors and get the
+result:
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/twoFactors}
+
+which is again numerically similar to that of SAS
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/a3_2.txt}
+
+Doing this problem helps me learn much more about data analysis. However, my
+program only works for balanced data. For non-balenced data, the result is
+different from that of SAS as we have not done any fiting of data.
+The source code of our ANOVA program is listed in Appendix~\ref{sec:ANOVAProg}.
+
+\bibliographystyle{plain}
+\bibliography{Stat}
+
+\appendix
+\section{Binary tree source code}\label{sec:bintreeCode}
+\subsection{main.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/main.c}
+\subsection{btree1.c and tree1.h}
+The same as files from the class website.
+\subsection{timer.h}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/timer.h}
+\subsection{timing.h}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/timing.h}
+\subsection{timing.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/timing.c}
+\subsection{loadmat.c}\label{sec:appLoadmat}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/loadmat.c_1}
+\subsection{Makefile}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/Makefile_1}
+\subsection{Data input file}\label{eqn:bintreeInputfile}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/data}
+
+
+\section{Source code for ANOVA program}\label{sec:ANOVAProg}
+\subsection{anova.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/anova.c}
+\subsection{tree1.h}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/tree1.h}
+
+\subsection{btree1.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/btree1.c}
+\subsection{loadmat.c}
+The same as the file in Appendix~\ref{sec:appLoadmat}.
+\subsection{Makefile}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/Makefile}
+\subsection{dcdflib.c, ipmpar.c and cdflib.h}
+Those dcdflib files are available at the
+\href{http://www.netlib.org/random/dcdflib.c.tar.gz}{link}.
+
+\subsection{Data input file}\label{sec:dataANOVA}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw4files/d3}
+\end{document}
+

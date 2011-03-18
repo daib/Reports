@@ -1,0 +1,296 @@
+%%This is a very basic article template.
+%%There is just one section and two subsections.
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[colorlinks]{hyperref}
+\usepackage{listings}
+\usepackage{fancyvrb }
+
+
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+\newenvironment{mylisting}
+ {\begin{list}{}{\setlength{\leftmargin}{1em}}\item\scriptsize\bfseries}
+ {\end{list}}
+
+ \newenvironment{mytinylisting}
+ {\begin{list}{}{\setlength{\leftmargin}{1em}}\item\tiny\bfseries}
+ {\end{list}}
+
+
+\title{STAT244 - Statistical Computing\\ Homework 1}
+\author{Dai Bui}
+\begin{document}
+\date{}
+\maketitle
+\section{Power method for Eigenvalues and Eigenvectors}
+\subsection{Overview}
+    In this problem, we basically use a modified version of the Power
+    method called QR method~\cite{PressNumericalRecipes,
+    MathewsNumericalMethodMatlab} to find eigenvalues and eigenvectors of a
+    symmetric matrix.
+    
+    The main idea of the QR method is to decompose a symmetric matrix $A$ into
+    two matrices $Q$, which is orthogonal, and an upper-triangular matrix $U$,
+    then the next matrix $A_1$ is constructed from $Q$ and $U$ so that $A$ and
+    $A_1$ are \textit{similar}, thus they have the same eigenvalues. For
+    example, we use QR decomposition to decompose a symmetric matrix $A$ as
+    follows:
+    \begin{equation}\label{eqn:qrDecompose}
+    A=Q\ U	
+    \end{equation}
+	then set: 
+	\begin{equation}
+    A_1=UQ	\notag
+    \end{equation}
+	From equation~\ref{eqn:qrDecompose}, we have:
+	\begin{equation}\label{eqn:simularMatrices}
+    Q'AQ=Q'Q\ UQ=(Q'Q)UQ=UQ=A_1
+    \end{equation}
+	since $Q'Q=Q^{-1}Q=I$ as $Q$ is orthogonal.
+	Equation~\ref{eqn:simularMatrices} suggests that $A$ and $A_1$ are similar then
+	they have the same eigenvalues. We continue this process with $A_1$ until we
+	obtain $A_n$ a diagonal matrix, which contains all the eigenvalues on its
+	diagonal. The pseudo code for the QR iteration method is as follows:
+	
+	\begin{lstlisting}
+    while 1
+  		[q,r] <- qr(A)
+  		if sum(sum(abs(triu(r,1)))) < TOLERANCE
+     			break
+  		end
+  		A <- r * q
+	end
+	\end{lstlisting}
+	After the QR iteration converges, the diagonal of contains the eigenvalues of
+	the \textit{original} matrix. 
+	
+	The Gaussian elimination method is used to derive the respective eigenvector
+	for each eigenvalue obtained in the previous QR iteration step. Basically, if
+	we have an eigenvalue $\lambda$ and we find the respective eigenvector $V$
+	for that eigenvalue by solving the equation:
+	\begin{equation}\label{eqn:eigenVector}
+    (A-\lambda I)V=\vec{0}
+    \end{equation}
+	The matrix $X=(A-\lambda I)$ is obtained by subtracting each element on the
+	diagonal of $A$ by $\lambda$. Then the equation $XV=\vec{0}$ is solved using
+	Gaussian elimination method for a \textit{non-trivial} solution, which is a
+	eigenvector $V$.
+	
+\subsection{Implementation}	
+A program is implemented with three different approaches:
+\begin{itemize}
+  \item The Gram - Schmidt
+orthogonalization \href{http://www.stat.berkeley.edu/classes/s244/samples/gs.c}{gs.c} routine is
+used for QR decomposition in the QR iteration method. 
+\item The \texttt{dgeqrf} and \texttt{dorgqr} routines from LAPACK is used for
+QR decomposition.
+\item Finally, the \texttt{dsyev} of LAPACK is used to find both eigenvalues
+and eigenvectors of $A$ directly.
+\end{itemize}
+
+The program is called \texttt{evv} and used as follows: \texttt{evv
+matrix\_file option}, where the \texttt{option} field is one of the follow:
+\begin{itemize}
+  \item \texttt{g} - use the Gram - Schmidt orthogonalization for QR
+  decomposition.
+  \item \texttt{l} - use LAPACK's \texttt{dgeqrf} and \texttt{dorgqr} routines
+  for QR decomposition.
+  \item \texttt{d} - use LAPACK's \texttt{dsyev} routine to find the
+  eigenvalues and eigenvectors directly.
+\end{itemize}
+For example, \texttt{evv matrix g} to run program using the Gram - Schmidt
+orthogonalization routine.
+\subsection{Results}
+The following input $5\times 5$ matrix from the
+book~\cite{MathewsNumericalMethodMatlab} is used:
+\begin{center}
+  \begin{tabular}{ c c c c c }
+    3.6 & 4.4 & 0.8 & -1.6 & -2.8 \\
+	4.4 & 2.6 & 1.2 & -0.4 & 0.8 \\ 
+	0.8 & 1.2 & 0.8 & -4.0 & -2.8 \\ 
+	-1.6 & -0.4 & -4.0 & 1.2 & 2.0 \\
+	-2.8 & 0.8 & -2.8 & 2.0 & 1.8 
+  \end{tabular}
+\end{center}
+\begin{enumerate}
+  \item 
+The result for the program using the Gram - Schmidt orthogonalization routine,
+i.e. we run \texttt{evv matrix g} is as follows:
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw1files/QRGSoutput.txt}
+
+\item The result for the program using the LAPACK's \texttt{dgeqrf} and
+\texttt{dorgqr} routines for QR decomposition, i.e. we run \texttt{evv matrix l}
+is as follows:
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw1files/QRLapackOutput.txt}
+
+\item The result for the program using the LAPACK's LAPACK's \texttt{dsyev}
+routine to find the eigenvalues and eigenvectors directly, i.e. we run \texttt{evv matrix d} is as
+follows:
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw1files/dsyve.txt}
+\end{enumerate}
+\subsection{Comparison and Conclusion}
+Our implementation produces the same set of eigenvalues as the LAPACK
+implementation using \texttt{dsyev}. The respective eigenvector for each
+eigenvalue of our implementation is \textit{proportional} to that of LAPACK
+implementation. The results prove that our implementation is
+\textit{numerically} correct.
+
+Our QR iteration procedures both converge after 90 iterations. We run our
+program on a MacBook Pro with 2.2 GHz Intel Core 2 Duo. Both our implementations
+and LAPACK routine to find eigenvalues and eigenvectors of a $5\times 5$ matrix
+are so fast that we cannot measure the execution time using the
+\href{http://www.stat.berkeley.edu/classes/s244/samples/timer.h}{timer.h}, all
+executions finish with $0.00 sec$. Unfortunately, we do not manage to find a
+Linux machine that have both the LAPACK and Linux Real-time clock library to
+measure execution time in nano-seconds to compare execution times between
+implementations better.
+
+I did one project before on matrix tridiagonalization on NVIDIA GPU using
+Householder transformation. At that time, I did not fully understand the
+relation between that transformation and QR method. However, after doing this
+homework, it is more clear for me that the result of the matrix
+tridiagonalization can be later used in QR iterations to find the eigenvalues
+as QR iterations will converge faster on tridiagonal
+matrices~\cite{MathewsNumericalMethodMatlab, PressNumericalRecipes}. However, I
+do not have enough time to implement this approach.
+
+The complete source code of the program is included in the
+Appendix~\ref{sec:appEigenVVCode}.
+
+\section{Cluster Analysis using the Leader algorithm}
+\subsection{Overview}
+In this problem, we implement the Leader and Kmeans algorithms for clustering
+data points. Leader algorithm is fast and simple, requires small memory
+space but the result is not very good. We later use Kmeans to improve the
+result of leader algorithm.
+\subsubsection{Leader Algorithm}
+We will sketch the leader algorithm in this section. The pseudo code for the
+leader algorithm is as follows:
+\begin{lstlisting}
+//load the data set Q
+Q <- loadData()
+
+p <- nextDataPoint(Q)	//choose the first data point
+
+//create a new cluster and set p as the leader of that cluster
+c <- newCluster()
+leader(c) <- p
+addPointToCluster(c, p)	
+addToClusterSet(C, c)	//add c to the set of clusters C
+
+//for all data point in Q
+while(hasNextPoint(Q))
+{
+	nextPoint <- nextDataPoint(Q)
+	//find the cluster whose leader is closest to the nextPoint
+	closestCluster <- clusterWithClosestLeader(C, nextPoint)
+	
+	if(distance(leader(closestCluster), nextPoint) < THRESHOLD)
+	{
+		//add the nextPoint to that closest cluster
+		addPointToCluster(closestCluster, nextPoint)
+	}
+	else
+	{
+		//create a new cluster
+		nc <- newCluster()
+		leader(nc) <- nextPoint
+		addPointToCluster(nc, nextPoint)	
+		addToClusterSet(C, nc)	//add the new cluster to the set of clusters C
+	}
+}
+\end{lstlisting}
+\subsubsection{Kmeans Algorithm}
+After we have the result of the leader algorithm, we run Kmeans
+algorithm~\cite{MartinezComputationalStatsMATLAB} on that result to obtain
+better clustering.
+
+The procedure for Kmeans is as follows:
+\begin{enumerate}
+  \item Obtain $k$ clusters from the leader algorithm.
+  \item Take each data point $x_i$ and calculate the Euclidean distance between
+  it and every cluster centroid.
+  \item Suppose that $x_i$ is in the cluster $r$-th, and $n_r$ is the number of
+  points in the $r$-th cluster. Let $d^2_{ir}$ be the Euclidean distance
+  between $x_i$ and the centroid of cluster $r$. If there is a group $s$ such
+  that:
+  \begin{equation}
+  \frac{n_r}{n_r-1}d^2_{ir}> \frac{n_s}{n_s+1}d^2_{is}\notag
+  \end{equation}
+	then move $x_i$ to cluster $s$.
+  \item If there are several clusters that satisfy the above inequality, then
+  move $x_i$ to the group that has the smallest value for
+  $\frac{n_s}{n_s+1}d^2_{is}$
+  \item Repeat steps 2 through 4 until no more changes are made.
+\end{enumerate}
+\subsection{Implementation}\label{sec:implementation}
+We implemented a program running both leader and kmeans algorithms. We
+use the \href{}{crime} data set to run. Following is the output of the program
+without kmeans when threshold is 500. 
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw1files/leader_500.txt}
+
+And following the is output of the program with running kmeans algorithm after
+running leader algorithm.
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw1files/leader_500_k.txt}
+
+\subsection{Results and Conclusion}
+Figure~\ref{fig:thresholdClusters} shows the effect of threshold on the
+number of clusters. From Figure~\ref{fig:thresholdSumSquares}, we can see that
+the Kmeans algorithms only improve the results of the leader algorithm when
+there are not too few or not too many clusters.
+
+From the program output in the Section~\ref{sec:implementation}, when threshold
+is 500, there are 5 clusters and the sum of squares of the leader algorithm
+only is 232748.833333 and the sum of squares after using kmeans algorithm is
+105561.666667. While with the same data set, we use kmeans implementation in
+MATLAB for 5 clusters, the sum of squares is about 710680. This indicates that
+depending on some special order, kmeans can produce different results.
+
+The source code of the leader and kmeans program is included in
+Appendix~\ref{sec:appLeaderCode}.
+ 
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.7\columnwidth]{hw1files/effect_of_threshold_on_sum_of_squares.png}
+\caption{Effect of threshold on the number of clusters.}\label{fig:thresholdSSQ}
+\label{fig:thresholdSumSquares}
+\end{figure}
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.7\columnwidth]{hw1files/effect_of_threshold_on_the_number_of_clusters.png}
+\caption{Effect of threshold on the number of
+clusters.}\label{fig:thresholdClusters}
+\end{figure}
+
+\bibliographystyle{plain}
+\bibliography{Stat}
+\appendix
+\section{Source code for the Power method for Eigenvalues and
+Eigenvectors}\label{sec:appEigenVVCode}
+\subsection{main.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw1files/main.c}
+\subsection{eigenVV.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw1files/eigenVV.c}
+\subsection{gs.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw1files/gs.c}
+\subsection{loadmat.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw1files/loadmat.c}
+\subsection{timer.h}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw1files/timer.h}
+\subsection{Makefile}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw1files/Makefile}
+
+\section{Source code for the Leader program}\label{sec:appLeaderCode}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw1files/leader.cpp}
+
+\end{document}

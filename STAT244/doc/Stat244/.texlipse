@@ -1,0 +1,13 @@
+#TeXlipse project settings
+#Sun May 16 13:06:39 PDT 2010
+builderNum=2
+outputDir=
+makeIndSty=
+bibrefDir=
+outputFormat=pdf
+tempDir=tmp
+mainTexFile=HW3.tex
+outputFile=HW3.pdf
+langSpell=en
+markDer=true
+srcDir=

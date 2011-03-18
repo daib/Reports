@@ -1,0 +1,25 @@
+There are 5 numbers on the first line
+Read 25 items (5 x 5 array)
+   3.60000    4.40000    0.80000   -1.60000   -2.80000 
+   4.40000    2.60000    1.20000   -0.40000    0.80000 
+   0.80000    1.20000    0.80000   -4.00000   -2.80000 
+  -1.60000   -0.40000   -4.00000    1.20000    2.00000 
+  -2.80000    0.80000   -2.80000    2.00000    1.80000 
+Using LAPACK DSYEV to computer eigenvalues and eigenvectors
+
+Eigenvector for eigenvalue -4.000000:
+ -0.400000	  0.400000	 -0.600000	 -0.400000	 -0.400000	
+
+Eigenvector for eigenvalue -2.000000:
+  0.400000	 -0.400000	 -0.400000	 -0.600000	  0.400000	
+
+Eigenvector for eigenvalue 1.000000:
+ -0.400000	  0.400000	  0.400000	 -0.400000	  0.600000	
+
+Eigenvector for eigenvalue 5.000000:
+  0.400000	  0.600000	 -0.400000	  0.400000	  0.400000	
+
+Eigenvector for eigenvalue 10.000000:
+ -0.600000	 -0.400000	 -0.400000	  0.400000	  0.400000	
+
+ Total computation time :    0.00 sec

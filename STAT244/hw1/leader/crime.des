@@ -1,0 +1,26 @@
+The file crime contains the rates of seven types of 
+crime as reported in the 1970 Statistical Abstract for
+16 American cities.  The variables in the data set are
+as follows:
+
+  1 City (see codes below)
+  2 Murder 
+  3 Rape
+  4 Robbery
+  5 Assault
+  6 Burglary
+  7 Larceny
+  8 Auto Theft
+
+The murder and rape rates are per 1,000,000 population; the 
+others are per 100,000 population.  The city codes are:
+
+01 = Atlanta     09 = Houston                   
+02 = Boston      10 = Kansas City               
+03 = Chicago     11 = Los Angeles               
+04 = Dallas      12 = New Orleans               
+05 = Denver      13 = New York                  
+06 = Detroit     14 = Portland                  
+07 = Hartford    15 = Tucson                    
+08 = Honolulu    16 = Washington  
+

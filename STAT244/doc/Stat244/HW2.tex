@@ -1,0 +1,170 @@
+%%This is a very basic article template.
+%%There is just one section and two subsections.
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[colorlinks]{hyperref}
+\usepackage{listings}
+\usepackage{fancyvrb }
+\usepackage{subfigure}
+
+
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+\newenvironment{mylisting}
+ {\begin{list}{}{\setlength{\leftmargin}{1em}}\item\scriptsize\bfseries}
+ {\end{list}}
+
+ \newenvironment{mytinylisting}
+ {\begin{list}{}{\setlength{\leftmargin}{1em}}\item\tiny\bfseries}
+ {\end{list}}
+
+
+\title{STAT244 - Statistical Computing\\ Homework 2}
+\author{Dai Bui}
+\begin{document}
+\date{}
+\maketitle
+\section{Dynamic Graphics}
+\subsection{Overview}
+This problem explores the effects of window width on
+smoothing. Smoothing techniques have several applications such as explorary data
+analysis, model building, goodness-of-fit, parametric estimation,
+etc.~\cite{SimonoffSmoothingTechs}. The smoothing method is a compromise
+between the parametric modeling, which needs to assume the underlying model of
+empirical data, and a purely non-parametric modeling, which does not make any
+assumptions about the model. The parametric approach may lead to misleading
+interpretations of observed data when the assumption about the data model is
+wrong, while purely non-parametric approach does not provide any true summary
+of data.
+
+Let $\{x_1, x_2, \ldots, x_n\}$ be a random sample set of size $n$ from the
+variable $X$ that has probability density function $f(x)$. Since $f$ is not
+known, we want to find an estimate $\hat{f}$ for $f$ from the empirical
+observations. 
+
+\begin{equation}\label{eqn:kernalDensityEstimation}
+\hat{f}=\frac{1}{nh}\sum_{i=1}^nK\bigl(\frac{x-x_i}{h}\bigr)
+\end{equation}
+
+ The equation~\ref{eqn:kernalDensityEstimation} is form of a \textit{kernel
+ density estimator} with kernel function $K$. There are several kernel functions
+ such as: gaussian, rectangular, triangular, epanechnikov, biweight, cosine,
+ optcosine. In the equation~\ref{eqn:kernalDensityEstimation}, $h$ is bin width, so-called bandwidth. When we change the type of the kernel function $K$, and/or the bin
+ width $h$, we will get different shapes of the estimate $\hat{f}$.
+ 
+ \subsection{Implementation}
+ We implemented a program in R to study the effects of bin width on the
+ smoothness of the estimate density function.
+ 
+ When an user first run the program, an open file dialog window appears for the
+ user to browse and select a file to open as in Figure~\ref{fig:openFileDlg}.
+ For example, we use the data file
+ \href{http://pages.stern.nyu.edu/~jsimonof/SmoothMeth/Data/Tab/cdrate.tab}{cdrate.tab} 
+ used in the book~\cite{SimonoffSmoothingTechs}. As the data file can has more
+ than one column, an user needs to select which column they want to use for
+ the smoothing program to draw. We do this by open a dialog with radio buttons
+ for the names of data columns as in Figure~\ref{fig:dataColSelection}.
+ 
+ \begin{figure}[ht!]
+\centering
+\includegraphics[width=0.5\columnwidth]{hw2files/openFileDlg.png}
+\caption{Open file dialog window.}
+\label{fig:openFileDlg}
+\end{figure}
+ 
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.3\columnwidth]{hw2files/dataColSelection.png}
+\caption{Data column selection.}
+\label{fig:dataColSelection}
+\end{figure}
+ 
+ After that, the main window of the program appears as in
+ Figure~\ref{fig:smoothingMainWindow}. The main window has a slider to vary the
+ \textit{number of bins}, thereby varying the bin width (bandwidth) $h$ of the
+ smoothing method. There are radio buttons on the main window for users to
+ select which type of kernel function $K$ to use in the kernel density
+ estimator. By default, the kernel function is Gaussian.
+ 
+ \begin{figure}[ht!]
+\centering
+\includegraphics[width=0.7\columnwidth]{hw2files/smoothingProgram.png}
+\caption{Main window of the smoothing program.}
+\label{fig:smoothingMainWindow}
+\end{figure}
+
+Users can open a new data file by clicking on the \texttt{Open data file}
+button on the main window.
+ 
+ We choose to use the number of bins instead of the bin width in the slider,
+ however, the bin width can be derived from the number of bins as follows:
+ \begin{equation}
+ h= \frac{dataRange}{\#\ of\ bins}
+ \end{equation}
+ This bin width is used to compute the density estimator by using the
+ \texttt{density} function in R.
+ 
+ One corner case when we open a data file, users might select a non-parametric
+ data column. In that case, we will display a message box telling users that
+ the data column cannot be used in smoothing methods.
+ \subsection{Conclusion}
+ For experiment the smoothness, we use the data set available online
+ \href{http://pages.stern.nyu.edu/~jsimonof/SmoothMeth/Data/Tab/elusage.tab}{elusage.tab}
+ from the same book~\cite{SimonoffSmoothingTechs}.
+ 
+ Figures~\ref{fig:gaussianKernel} and ~\ref{fig:rectangularKernel} show that Gaussian kernel function is smoother than rectangular kernel. From
+ Figures~\ref{fig:overSmoothing}, ~\ref{fig:underSmoothing} and
+ ~\ref{fig:gaussianKernel}, we can see that when the bin width is too big, the
+ density estimator is too smooth which might over assume about the data model.
+ This bias toward the kernel function $K$ model may lead to misleading
+ interpretation about the data. When the bin width is too small, the density
+ estimator does not capture and predict the data tendency quite well as in
+ Figure~\ref{fig:underSmoothing} as it is too rough. When the bin width is not
+ too big or too small as in Figure~\ref{fig:gaussianKernel}, the
+ density estimator can capture the data model quite well.
+ 
+  \begin{figure*}[ht!]
+\centering
+\subfigure[Over-smoothing when the bin width is too large.]{
+\includegraphics[width=0.47\textwidth]{hw2files/UsageBin2G.png}
+\label{fig:overSmoothing}
+}
+\subfigure[Under-smoothing when the bin width is too small.]{
+\includegraphics[width=0.47\textwidth]{hw2files/UsageBin100G.png}
+\label{fig:underSmoothing}
+}
+\subfigure[Smoothing with Gaussian kernel function.]{
+\includegraphics[width=0.47\textwidth]{hw2files/UsageBin32G.png}
+\label{fig:gaussianKernel}
+}
+\subfigure[Smoothing with Rectangular kernel function.]{
+\includegraphics[width=0.47\textwidth]{hw2files/UsageBin32Rec.png}
+\label{fig:rectangularKernel}
+}
+
+\caption{Smoothness}
+\end{figure*}
+
+ 
+ I like this problem as it exposes me to a new aspect that I did not know
+ before. Learning using R with Tcl/Tk is quite fun.
+ 
+ Finally, the source code in R of the program is listed in
+ Appendix~\ref{sec:appSmoothing}.
+ 
+\bibliographystyle{plain}
+\bibliography{Stat}
+\appendix
+\section{Source code for smoothing program in R}\label{sec:appSmoothing}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw2files/smoothing.R}
+
+
+\end{document}

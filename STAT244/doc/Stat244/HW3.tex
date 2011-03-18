@@ -1,0 +1,311 @@
+%%This is a very basic article template.
+%%There is just one section and two subsections.
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[colorlinks]{hyperref}
+\usepackage{listings}
+\usepackage{fancyvrb }
+\usepackage{subfigure}
+
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+\newenvironment{mylisting}
+ {\begin{list}{}{\setlength{\leftmargin}{1em}}\item\scriptsize\bfseries}
+ {\end{list}}
+
+ \newenvironment{mytinylisting}
+ {\begin{list}{}{\setlength{\leftmargin}{1em}}\item\tiny\bfseries}
+ {\end{list}}
+
+
+\title{STAT244 - Statistical Computing\\Homework 3}
+\author{Dai Bui}
+\begin{document}
+\date{}
+\maketitle
+
+ \section{ARMA Parameter Estimation}
+ \subsection{Overview}
+ This problem is to implement a program to estimate parameters of 
+ Autoregressive moving average (ARMA)~\cite{BoxTimeSeries, FalkStatSAS}
+ processes.
+ 
+ An ARMA process is composition of an Autoregressive (AR) process and an Moving
+ Average (MA) process. Let $(\epsilon_t)_{t\in \mathbb{Z}}$ be white noise,
+ $\varphi_1, \ldots, \varphi_p, \theta_1, \ldots, \theta_q\in\mathbb{R}$.If a
+stochastic process $(Y_t)_{t\in \mathbb{Z}}$ satisfies the following
+ equation:
+ \begin{equation}\label{eqn:ARMA}
+ Y_t=\sum_{i=1}^{p}\varphi_iY_{t-i}+
+ \epsilon_t +\sum_{i=1}^{q}\theta_i\epsilon_{t-i}
+ \end{equation}
+then the process $(Y_t)_{t\in \mathbb{Z}}$ is said to be
+an \textit{autoregressive moving average process of order $p$, $q$}, denoted
+ARMA($p$, $q$).
+
+As we can see from the equation~\ref{eqn:ARMA}, if we can estimate the
+parameters $\varphi_i$ and $\theta_i$ then we can \textit{predict} the future
+outcome of an ARMA process based on previous observations of the process. To do
+that, we use Kalman filter and one of the optimization methods to estimate the
+\textit{maximum likelihoo} given an observation sequence, the parameters
+$\varphi_i$ and $\theta_i$ are most likely to be.
+
+The equation~\ref{eqn:ARMA} first is converted into a state-space model (see
+page 115 in~\cite{FalkStatSAS} ) to used in Kalman filter to estimate
+likelihood. Then, Kalman filter can estimate the likelihood function
+$f(Y_T,\ldots, Y_0|\varphi, \theta)$ which is the probability density
+function of an observed sequence $(Y_t)_{t\in 1, \ldots, T}$ that given a set of
+parameters $(\varphi, \theta)$.
+
+Now we change the way saying about $f(Y_T,\ldots,Y_0|\varphi, \theta)$ that
+given the set of observed data $(Y_t)_{t\in 1, \ldots, T}$, we want the likelihood of
+some set of parameters $(\varphi, \theta)$, then we set:
+
+\begin{equation}\label{eqn:parametersLikelihood}
+\mathcal{L}(\varphi, \theta|Y_T,\ldots, Y_0) = f(Y_T,\ldots,Y_0|\varphi,
+\theta)
+\end{equation}
+
+The equation~\ref{eqn:parametersLikelihood} suggests that we can use some
+optimization methods like Powell and Nelder \& Mead methods, i.e. using
+$\mathcal{L}(\varphi, \theta|Y_T,\ldots, Y_0)$ as the input, to search for the
+maximum likelihood $\mathcal{L}(\varphi, \theta|Y_T,\ldots, Y_0)$, which means
+the most suitable parameters.
+\begin{equation}
+(\hat{\varphi},\hat{\theta})=\arg\max_{\varphi, \theta} \mathcal{L}(\varphi,
+\theta|Y_T,\ldots, Y_0)
+\end{equation}
+
+ \subsection{Implementation and Results}
+ We use the \texttt{as154.f} routine to compute the log of the likelihood
+ $\mathcal{L}(\varphi, \theta|Y_T,\ldots, Y_0)$ and use it as the input
+ function evaluation that Powell and  Nelder \& Mead methods wants to optimize.
+ 
+ Powell and  Nelder \& Mead methods will optimize the  $\mathcal{L}(\varphi,
+ \theta|Y_T,\ldots, Y_0)$  over the set of parameters $(\varphi, \theta)$.
+ 
+ Since both Powell and  Nelder \& Mead routines from
+ the~\cite{PressNumericalRecipes} as \textit{minimization} routines, however,
+ we want to \textit{maximize} the likelihood, then we need to \textit{invert},
+ i.e. $\frac{1}{\mathcal{L}(\varphi,
+ \theta|Y_T,\ldots, Y_0)}$, the likelihood computed from \texttt{as154.f} when
+ input it to the Powell and Nelder \& Mead routines.
+ 
+ \subsubsection{First experiment: ARMA(2,2)}\label{sec:arma22}
+ We generated a sequence of ARMA(2,2) 1000 observations using R routine with
+ parameters $ar=(.9,-.2),ma=(-.7,.1)$ as follows:
+ 
+ \texttt{arima.sim(model=list(ar=c(.9,-.2),ma=c(-.7,.1)),n=1000)}
+
+The Nelder \& Mead estimates the parameters quite well as listed below. Three
+out of four parameters of the point 2 are close to the the parameters used to
+generate the sequence.
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/arma22_n.txt}
+ 
+ The Powell method listed below does not estimate the parameters exactly the
+ same as the parameters used to generate the sequence.
+
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/arma22_p.txt}
+
+ We also test the same sequence and try to find parameters using R
+ \texttt{arima} routine. However, R routine returns a quite different set of
+ parameters with  $ar = (0.0208, -0.1114)$ and $ma =
+ (0.1485, 0.1974)$
+ 
+ \subsubsection{Second experiment: ARMA(2,4)}
+ The next sequence is generated with $ar=(0.9,-0.2), ma=(1,2,4,3)$. And the
+ results are as follows:
+
+ \VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/arma24_p.txt}
+ \VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/arma24_n.txt}
+  
+  while the result from R is as follows: $ar=(0.9175, -0.2848 ), ma
+  =(1.4082, 0.8300, 0.5009, 0.4136)$
+ \subsubsection{Third experiment: MA(2)}
+ Next set of parameters is $ma=(.5,-.6)$ with the result
+ \VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/ma2_p.txt}
+ \VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/ma2_n.txt}
+ 
+ \subsubsection{Fourth experiment: AR(1)}
+ We then use the AR(1) with $ar = (0.95)$. The results of Powell and
+ Nelder \& Mead are similar but not what we used to generate the sequence
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/ar1_p.txt}
+ 
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/ar1_n.txt}
+ 
+ \subsubsection{Fifth experiment: AR(2)}
+ The last set of parameters is $ar=(.6,-.3)$
+  \VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/ar2_p.txt}
+ \VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/ar2_n.txt}
+ \subsection{Conclusion and Future Work}
+The results are varied probably because the likelihood function is not always
+ monotonic while the optimization methods often search for local minimization
+ or maximization points, so the initial guess points are important. We also find
+ that the \texttt{as154.f} routines possibly produce incorrect results for a
+ large number of observations. It is also seems that the Nelder \& Method often
+ produce better results than the Powell method.
+ 
+ This problem is quite interesting. Doing this homework helps me understand
+ Kalman filter much better and it is an important concept. The ARMA model is
+ recently used in some recent research papers to predict future temperatures of computer systems~\cite{CoskunThermalBalancingMPSoCs, CoskunThermalMngMPSoC}, i.e. a data
+ center.
+ 
+ I am planning to use this ARMA model to predict the future workload of parallel 
+and distributed data flow applications that often have repeated behaviors. The
+prediction future workload is then used for scaling down processor speeds to
+save energy.
+ 
+ \section{Autocovariance using the Fast Fourier Transform}
+ \subsection{Overview}
+ In this problem we seek to use Fast Fourier Transform (FFT) to find the
+ autocovariance of a sequence. We will derive our computation method from the
+ books~\cite{BoxTimeSeries, FalkStatSAS}.
+ 
+ The basic formula of the autocovariance is as follows:
+ \begin{equation}\label{eqn:basicAutocovariance}
+ C_k=\frac{1}{N}\sum_{k=1}^{N-k}(X_t-\bar{X})(X_{t+k}-\bar{X})
+ \end{equation} 
+ 
+ Now we will describe the analysis for computing autocovariances using discrete
+ Fourier transform. First, we fit the data sequence with a Fourier model as in
+ equation~\ref{eqn:fitingDataSeriesFourier}.
+ \begin{equation}\label{eqn:fitingDataSeriesFourier}
+ x_t = \sum_{k=0}^{N/2}(A_k \cos(\frac{2\pi tk}{N}) + B_k \sin(\frac{2\pi
+ tk}{N})), \forall t = 1, \ldots, N
+ \end{equation}
+ Then from~\cite{BoxTimeSeries, FalkStatSAS}, we have:
+ \begin{equation}\label{eqn:coeffienceA}
+ A_k =  \left\{ \begin{array}{rcl}
+ \frac{2}{N}\sum_{t = 1}^{N}x_t\cos(\frac{2\pi
+ tk}{N}), & \forall k = 1, \ldots, \lfloor\frac{N-1}{2}\rfloor \\
+\frac{1}{N}\sum_{t = 1}^{N}x_t\cos\frac{(2\pi tk}{N}), & k = 0 \mbox{ and }
+  k = \frac{N}{2} \mbox{ if N is even}
+ \end{array}\right.
+ \end{equation}
+
+ \begin{equation}\label{eqn:coeffienceB}
+ B_k = \frac{2}{N}\sum_{t = 1}^{N}x_t\sin(\frac{2\pi tk}{N}), \forall k = 1,
+ \ldots, \lfloor\frac{N-1}{2}\rfloor
+ \end{equation}
+
+The equations~\ref{eqn:coeffienceA} and~\ref{eqn:coeffienceB} suggests that
+$A_k$ and $B_k$ for $k=1, \ldots, \lfloor\frac{N-1}{2}\rfloor$ can be obtained by
+using the Fast Fourier Transform (FFT) of $x_t$. For example, consider the 
+discrete Fourier transform of the observation sequence $X_t$:
+
+\begin{equation}\label{eqn:xFT}
+X_k = \sum_{t=1}^{N}x_t e^{-i2\pi tk/N}, \forall k = 1, \ldots, N
+\end{equation}
+
+Then from equations~\ref{eqn:coeffienceA},~\ref{eqn:coeffienceB}
+and~\ref{eqn:xFT}, we have:
+\begin{equation}
+X_k\frac{2}{N} = A_k - iB_k, \forall k = 1, \ldots, \lfloor\frac{N-1}{2}\rfloor
+\end{equation}
+
+ Then we have the \textit{intensity of the frequency} $\frac{k}{N}$ where $0
+ \leq k \leq \frac{N}{2}$
+ \begin{equation}\label{eqn:intensity}
+ I(\frac{k}{N}) = \frac{N}{2}(A_k^2 + B_k^2)
+ \end{equation}
+
+We also have $\forall 0\leq t\leq\frac{N}{2}$:
+
+\begin{align}\label{eqn:intensityAutocovariance}
+I(\frac{t}{N}) = 2 \sum_{j=-(N-1)}^{N-1}C_ke^{-i2\pi tj/N}, \forall
+0\leq t\leq \frac{N}{2}
+\end{align}
+For $\frac{N}{2} < t < N$ we have $I(\frac{t}{N}) = I(\frac{N-t}{N})$.
+
+Please note that for a certain $0\leq k \leq N-1$:
+\begin{align}\label{eqn:autocovarianceEstimation}
+\frac{1}{N}\sum_{t=0}^{N-1}\frac{I(\frac{t}{N})}{2}e^{i2\pi
+tk/N}
+=&\frac{1}{N}\sum_{t=0}^{N-1}(\sum_{j=-(N-1)}^{N-1}C_je^{-i2\pi tj/N})e^{i2\pi
+tk/N} \notag \\
+=& \frac{1}{N}\sum_{j=-(N-1)}^{N-1}C_j\sum_{t=0}^{N-1}e^{i2\pi t(k-j)/N} \notag
+\\ =& C_k, \forall 0 \leq k \leq N-1
+\end{align}
+
+The equation~\ref{eqn:autocovarianceEstimation} suggests that $C_k$ is
+obtained from the inverse discrete Fourier transform of $I(\frac{t}{N})$.
+
+\subsection{Implementation and Results}
+ We implemented a program to compute the autocovariance both in the tradition
+ computation method as in equation~\ref{eqn:basicAutocovariance} and using FFT
+ as the analysis in the above section.
+ 
+ We use the FFT routine from the book~\cite{PressNumericalRecipes}. The input
+ is a sequence of 16384 numbers generated by using the ARMA(2,2) process in
+ Section~\ref{sec:arma22}. The output for computing 50 autocovariances form 1
+ to 50 is listed in Appendix~\ref{sec:appAutocovarianceOutput}. The result
+ shows that the errors are smaller than $1.0E-3$.
+ 
+ \begin{figure}[ht!]
+\centering
+\includegraphics[width=0.7\columnwidth]{hw3files/computation_time_of_autocovariance.png}
+\caption{Autocovariance computation time.}
+\label{fig:openFileDlg}
+\end{figure}
+
+The computation time of each method with respect to the number of
+autocovariances. As we can see that the computation time of the traditional
+method increases linearly with respect to the number of autocovariance computed.
+While the computation time of FFT method stays the same. Basically, the
+computation time of FFT method is for computing all possible autocovariances.
+
+This effect is because the computation time of the FFT method is $O(N\log N)$
+while the computation time of the traditional method is $O(Nk)$ where $k$ is
+the number of autocovariances computed.
+
+\subsection{Conclusion}
+
+I particularly like this problem as it makes me work discrete Fourier
+transforms (DFT) to derive results. This problem really helps me understand FFT
+and DFT much better. It helps me have a more clear picture of DFT and FFT,
+which I did not obtain during signal processing classes. This problem also
+demonstrate the efficiency of spectral methods based on FFT.
+
+\bibliographystyle{plain}
+\bibliography{Stat}
+\appendix
+\section{Arma Source Code}
+\subsection{arma.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/arma.c}
+
+\subsection{armalk.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/armalk.c}
+\subsection{loadmat.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/loadmat.c}
+\subsection{Makfile}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/makefile}
+\subsection{Other source code}
+Other optimization routines for Powell and Nelder \& Mead are from the class
+website.
+
+\section{Autocovariance Source Code and Output}
+\subsection{Program output}\label{sec:appAutocovarianceOutput}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/autocovariance.txt}
+\subsection{autocovariance.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/autocovariance.c}
+\subsection{fourier.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/fourier.c}
+\subsection{timer.h}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/timer.h}
+\subsection{timing.h}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/timing.h}
+\subsection{timing.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/timing.c}
+\subsection{loadmat.c}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/loadmat.c}
+\subsection{Makfile}
+\VerbatimInput[baselinestretch=1,fontsize=\footnotesize,numbers=left]{hw3files/Makefile_1}
+\end{document}
