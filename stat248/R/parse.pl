@@ -53,9 +53,6 @@ sub flowLinks
     my $dst = $_[1];
     my @links = ();
     
-
-    print "from $src to $dst\n";
-
     my $currentPos = $src;
     
     while($currentPos ne $dst)
@@ -71,8 +68,6 @@ sub flowLinks
         #next pos
         if($routingTable{$currentPos} eq undef)
         {
-            #print "XY $currentX $currentY $dstX $dstY\n";
-
             if($currentX > $dstX)
             {
                 $currentX--;     
@@ -117,12 +112,9 @@ sub flowLinks
         my $nextPos = $currentX * $nY + $currentY;
         push(@links, "$currentPos\_$nextPos");
         
-        #print "next pos $nextPos\n";
-
         $currentPos = $nextPos;
     }
 
-    print "@links\n";
     return @links;
 }
 
@@ -207,8 +199,6 @@ while(<TASKGRAPH>)
         #compute links on a path
         for my $link ( &flowLinks($src, $dst))
         {
-            #print "link l$link\n";
-
             if(!(exists $linkFlows{$link}))
             {
                 $linkFlows{$link} = [];
@@ -239,7 +229,6 @@ while(<TASKGRAPH>)
         #compute links on a path
         for my $link ( &flowLinks($dst, $src))
         {
-            #print "link l$link\n";
             if(!(exists $linkFlows{$link}))
             {
                 $linkFlows{$link} = [];
@@ -268,7 +257,8 @@ for my $key (keys %linkFlows)
        $cmd .=  $linkFlows{$key}[$i]." ";
     }  
     $cmd .= " \| sort -n > l$key";
+    print $cmd."\n";
     system $cmd;
 }
 
-system "r -f $R; ps2pdf $graph.ps $graph.pdf; open $graph.pdf";
+#system "r -f $R; ps2pdf $graph.ps $graph.pdf; open $graph.pdf";
