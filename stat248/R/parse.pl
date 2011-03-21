@@ -244,7 +244,6 @@ while(<TASKGRAPH>)
 
 close TASKGRAPH;
 
-close R;
 
 close TRACE;
 
@@ -259,6 +258,11 @@ for my $key (keys %linkFlows)
     $cmd .= " \| sort -n > l$key";
     print $cmd."\n";
     system $cmd;
+
+    print R "l$key = diff(read.table(\"l$key\")[,1])\n"; 
+    print R "plot(l$key, type=\"l\")\n";
 }
 
-#system "r -f $R; ps2pdf $graph.ps $graph.pdf; open $graph.pdf";
+close R;
+
+system "r -f $R; ps2pdf $graph.ps $graph.pdf; open $graph.pdf";
