@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
+use POSIX;
 
 ###### Routing section
 my $nX = 3;
@@ -28,7 +29,7 @@ while(<ROUTING>)
     if(/$nodeSig\s+(\d+)/)
     {
         $currentNode = $1;         
-        $routingTable{$currentNode} = [];
+        $routingTable{$currentNode} = [()];
         #print "Current node $currentNode \n";
     } 
 
@@ -50,69 +51,78 @@ sub flowLinks
 {
     my $src = $_[0]; 
     my $dst = $_[1];
-    my @links = qw();
+    my @links = ();
     
+
+    print "from $src to $dst\n";
+
     my $currentPos = $src;
     
     while($currentPos ne $dst)
     {
-        my $nextPos = -1;
-        #next pos
-        if($routingTable{$currentPos} ne undef)
-        {
-            #default XY routing
-            my $currentX = $currentPos / $nY;
-            my $currentY = $currentPos % $nY;
+        #default XY routing
+        my $currentX = floor($currentPos / $nY);
+        my $currentY = $currentPos % $nY;
 
-            my $dstX = $dst / $nY
-            my $dstY = $dst % $nY;
+        my $dstX = floor($dst / $nY);
+        my $dstY = $dst % $nY;
+
+
+        #next pos
+        if($routingTable{$currentPos} eq undef)
+        {
+            #print "XY $currentX $currentY $dstX $dstY\n";
 
             if($currentX > $dstX)
             {
                 $currentX--;     
             }
-            else if($currentX < $dstX)
+            elsif($currentX < $dstX)
             {
                 $currentX++;
             }
-            else if($currentY > $dstY)
+            elsif($currentY > $dstY)
             {
                 $currentY--;
             }
-            else if($currentY < $dstY)
+            elsif($currentY < $dstY)
             {
                 $currentY++;
             }
             
-            $nextPos = $currentX * $nY + $currentY;
         }
         else
         {
             #table routing
             my $dir = $routingTable{$currentPos}[$dst];
+
             if($dir == $north)
             {
-                $nextPos = $currentPos + 1;
+                $currentY++;
             }
             if($dir == $south)
             {
-                $nextPos = $currentPos - 1;
+                $currentY--;
             }
             if($dir == $east)
             {
-                $nextPos = $currentPos + $nY;
+                $currentX++;
             }
             if($dir == $west)
             {
-                $nextPos = $currentPos - $nY;
+                $currentX--;
             }
         }
         
+        my $nextPos = $currentX * $nY + $currentY;
         push(@links, "$currentPos\_$nextPos");
+        
+        #print "next pos $nextPos\n";
 
         $currentPos = $nextPos;
     }
 
+    print "@links\n";
     return @links;
 }
 
@@ -127,7 +137,7 @@ my $graph = "graphs";
 
 
 #map from links to set of flows going through the links
-%linkFlows = ();
+my %linkFlows = ();
 
 #map from thread to ip
 my %threadIP = ();
@@ -195,13 +205,15 @@ while(<TASKGRAPH>)
         print R "plot($flow, type=\"l\")\n";
 
         #compute links on a path
-        foreach my $link ( &flowLinks($src, $dst))
+        for my $link ( &flowLinks($src, $dst))
         {
-            if($linkFlows{$link} eq undef)
+            #print "link l$link\n";
+
+            if(!(exists $linkFlows{$link}))
             {
                 $linkFlows{$link} = [];
             }
-            
+
             push (@{$linkFlows{$link}}, $flow);
         }
 
@@ -225,14 +237,16 @@ while(<TASKGRAPH>)
         print R "plot($flow, type=\"l\")\n";
 
         #compute links on a path
-        foreach my $link ( &flowLinks($dst, $src))
+        for my $link ( &flowLinks($dst, $src))
         {
-            if($linkFlows{$link} eq undef)
+            #print "link l$link\n";
+            if(!(exists $linkFlows{$link}))
             {
                 $linkFlows{$link} = [];
             }
-            
+
             push (@{$linkFlows{$link}}, $flow);
+
         }
 
         close FLOW;
@@ -244,5 +258,17 @@ close TASKGRAPH;
 close R;
 
 close TRACE;
+
+# generate traffic for each link
+for my $key (keys %linkFlows)
+{
+    my $cmd = "cat ";
+    for my $i ( 0 .. $#{$linkFlows{$key}})
+    {
+       $cmd .=  $linkFlows{$key}[$i]." ";
+    }  
+    $cmd .= " \| sort -n > l$key";
+    system $cmd;
+}
 
 system "r -f $R; ps2pdf $graph.ps $graph.pdf; open $graph.pdf";
