@@ -128,7 +128,7 @@ my $R = "plot.R";
 my $graph = "graphs";
 
 
-#map from links to set of flows going through the links
+#map from links to the set of flows going through the link
 my %linkFlows = ();
 
 #map from thread to ip
