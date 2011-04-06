@@ -167,29 +167,26 @@ for line in TASKGRAPH:
 
         FLOW.close()
 
-        flow = 's' + str(snd) + '_' + str(dst)
+        flow = 's' + snd + '_' + fst
 
         FLOW = open(flow, 'w')
 
-        timingPat = re.compile(r'Time\s+(\d+)\s+node\s+' + str(src) + r'\s+' + action + r'\s+(\d+)\s+to\s+' + str(dst))
+        timingPat = re.compile(r'Time\s+(\d+)\s+node\s+' + str(dst) + r'\s+' + action + r'\s+(\d+)\s+to\s+' + str(src))
 
         TRACE.seek(0)
 
         for line in TRACE:
             m = timingPat.search(line) 
             if m != None: 
-                currentSent += (int(m.group(2)) - 1)
-                if currentSent >= bufSize:
-                    FLOW.write(m.group(1) + '\n')
-                    currentSent = 0
+                FLOW.write(m.group(1) + '\n')
 
-        R.write(flow + r' = diff(read.table("' + flow+ '\")[,1])\n')
+        R.write(flow + r' = diff(read.table("' + flow + '\")[,1])\n')
         R.write(r'plot(' + flow + ', type=\"l\")\n')
 
 
         #compute links on a path
-        for l in flowLinks(src, dst):
-            if linkFlows[l] == None:
+        for l in flowLinks(dst, src):
+            if linkFlows.get(l) == None:
                 linkFlows[l] = [] 
             linkFlows[l].append(flow)
 
