@@ -229,15 +229,10 @@ for line in HINT:
   
 #implement a circular buffer 
 def shift(l, n): 
-    return [n]+l[:(len(l)-1)]
+    return l[1:] + [n]
+    #return [n]+l[:(len(l)-1)]
 
-previousTime = 0
-pktNum = 0
-initial_period = -1 
-threshold = 0.001 
-count = 0 #the number of successive small differences
-intervalWnd = []
-pktWnd = []
+threshold = 100000 
 
 
 #generate automaton patterns for each link
@@ -246,6 +241,11 @@ for key in linkFlows:
     #if hintTable.get(key) == None:
         #continue
     print key
+
+    previousTime = 0
+    pktNum = 0
+    count = 0
+    initial_period = -1 
 
     #form a list of values of hinted length
     period = hintTable[key][0]
@@ -279,6 +279,20 @@ for key in linkFlows:
             currentTime
             break
         
-# label the intervals in the pattern window
+    LINKTRAFFIC.close()
 
-# 
+    # label the intervals in the pattern window
+    for index in range(len(intervalWnd)):
+        if intervalWnd[index] >= threshold:
+            for f in linkFlows[key]:
+                lineIdx = 0
+                found = False 
+                for line in open(f):
+                    lineIdx += 1
+                    if str(pktWnd[index]) in line: 
+                        print f + r' at line ' + str(lineIdx)
+                        found = True
+                        break
+                if found:
+                    break
+
