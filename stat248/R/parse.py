@@ -211,4 +211,74 @@ for key in linkFlows:
 
 R.close()
 
-commands.getstatusoutput('r -f ' + r + '; ps2pdf ' + graph + '.ps ' + graph + '.pdf; open ' + graph + '.pdf')
+#commands.getstatusoutput('r -f ' + r + '; ps2pdf ' + graph + '.ps ' + graph + '.pdf; open ' + graph + '.pdf')
+
+
+# get the hint about periods from a file
+hint = "hint.txt"
+HINT = open(hint, 'r')
+
+hintTable = {}
+
+hintPat = re.compile('(\d+)\s+(\d+)\s+(\d+)\s+(\d+)')
+for line in HINT:
+    m = hintPat.search(line)
+    if m != None:
+        l = m.group(1) + '_' + m.group(2)
+        hintTable[l] = [int(m.group(3)), int(m.group(4))]
+  
+#implement a circular buffer 
+def shift(l, n): 
+    return [n]+l[:(len(l)-1)]
+
+previousTime = 0
+pktNum = 0
+initial_period = -1 
+threshold = 0.001 
+count = 0 #the number of successive small differences
+intervalWnd = []
+pktWnd = []
+
+
+#generate automaton patterns for each link
+for key in linkFlows:
+
+    #if hintTable.get(key) == None:
+        #continue
+    print key
+
+    #form a list of values of hinted length
+    period = hintTable[key][0]
+    init_period = hintTable[key][1]
+
+    intervalWnd = [0] * period
+    pktWnd = [0] * (period + 1)
+    #load the trace file
+    LINKTRAFFIC = open('l' + key, 'r')
+
+    for line in LINKTRAFFIC:
+        pktNum += 1
+        currentTime = int(line)
+        interval = currentTime - previousTime
+
+        intervalWnd = shift(intervalWnd, interval)
+        pktWnd = shift(pktWnd, currentTime)
+        previousTime = currentTime 
+
+        #eliminate the initial period
+        if pktNum <= init_period:
+            continue
+        else: 
+            count += 1
+
+
+        if count >=  period:
+            print intervalWnd 
+            print pktWnd
+            print pktNum
+            currentTime
+            break
+        
+# label the intervals in the pattern window
+
+# 
