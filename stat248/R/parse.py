@@ -241,7 +241,7 @@ for link in linkFlows:
 
     #if hintTable.get(key) == None:
         #continue
-    print key
+    #print key
 
     previousTime = 0
     pktNum = 0
@@ -273,11 +273,10 @@ for link in linkFlows:
             count += 1
 
 
-        if count >=  period:
-            print intervalWnd 
-            print pktWnd
-            print pktNum
-            currentTime
+        if count >  period:
+            #print intervalWnd 
+            #print pktWnd
+            #print pktNum
             break
         
     LINKTRAFFIC.close()
