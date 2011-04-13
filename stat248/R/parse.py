@@ -234,9 +234,10 @@ def shift(l, n):
 
 threshold = 100000 
 
+sockTimingAutomaton = {}
 
 #generate automaton patterns for each link
-for key in linkFlows:
+for link in linkFlows:
 
     #if hintTable.get(key) == None:
         #continue
@@ -248,13 +249,13 @@ for key in linkFlows:
     initial_period = -1 
 
     #form a list of values of hinted length
-    period = hintTable[key][0]
-    init_period = hintTable[key][1]
+    period = hintTable[link][0]
+    init_period = hintTable[link][1]
 
     intervalWnd = [0] * period
     pktWnd = [0] * (period + 1)
     #load the trace file
-    LINKTRAFFIC = open('l' + key, 'r')
+    LINKTRAFFIC = open('l' + link, 'r')
 
     for line in LINKTRAFFIC:
         pktNum += 1
@@ -281,18 +282,58 @@ for key in linkFlows:
         
     LINKTRAFFIC.close()
 
-    # label the intervals in the pattern window
-    for index in range(len(intervalWnd)):
-        if intervalWnd[index] >= threshold:
-            for f in linkFlows[key]:
+    #lastIdx = 0
+    # label packets in a burst in the pattern window to lows
+    for index in range(1, len(intervalWnd) + 1):
+        if (index < len(intervalWnd) and intervalWnd[index] >= threshold) or (index == len(intervalWnd)):
+            for f in linkFlows[link]:
                 lineIdx = 0
                 found = False 
                 for line in open(f):
                     lineIdx += 1
-                    if str(pktWnd[index]) in line: 
+                    if str(pktWnd[index - 1]) in line: 
+                        # what is the index of this packet in the burst of a flow?
+                        if sockTimingAutomaton.get(f) == None:
+                            sockTimingAutomaton[f] = [float('inf'), {lineIdx:[]}] #first value is init period, next is burst information
+                        if sockTimingAutomaton[f][1].get(lineIdx) == None:
+                            sockTimingAutomaton[f][1][lineIdx] = []
+                        sockTimingAutomaton[f][1][lineIdx].append([link, intervalWnd[index % len(intervalWnd)]]) #link, timing interval to next packet, 
+
+                        if sockTimingAutomaton[f][0] > (lineIdx - 1):
+                            sockTimingAutomaton[f][0] = (lineIdx - 1)
+
+                        # what happens if a flow has different bursts for different links?
                         print f + r' at line ' + str(lineIdx)
                         found = True
                         break
                 if found:
                     break
 
+        #lastIdx = index
+SOCK = open('flow-timing-automaton.txt', 'w')
+
+
+#for each flow
+for f in sockTimingAutomaton:
+    lastPkt = sockTimingAutomaton[f][0]
+    print '@SOCK ' + f[1:].replace(r'_', r' ') + ' ' + str(lastPkt)
+    SOCK.write('@SOCK ' + f[1:].replace(r'_', r' ') + ' ' + str(lastPkt))
+
+    timingWnd = sockTimingAutomaton[f][1]
+
+    x = f[1:].partition('_')
+
+    #for each burst
+    for i in sorted(timingWnd):
+        
+        burst = 'burst ' + str(i - lastPkt) + ' '   # number of packets to next burst
+
+        # enumerate links of the flow from source to destination
+        for index, l in enumerate(flowLinks(int(x[0]), int(x[2]))):
+            for link, interval in timingWnd[i]:
+                if l == link:
+                    burst += r'| ' + str(index + 1) + r' ' + str(interval)
+        print burst
+        SOCK.write(burst + '\n')
+        lastPkt = i
+SOCK.close()
