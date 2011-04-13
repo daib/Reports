@@ -297,13 +297,14 @@ for link in linkFlows:
                             sockTimingAutomaton[f] = [float('inf'), {lineIdx:[]}] #first value is init period, next is burst information
                         if sockTimingAutomaton[f][1].get(lineIdx) == None:
                             sockTimingAutomaton[f][1][lineIdx] = []
+
                         sockTimingAutomaton[f][1][lineIdx].append([link, intervalWnd[index % len(intervalWnd)]]) #link, timing interval to next packet, 
 
                         if sockTimingAutomaton[f][0] > (lineIdx - 1):
                             sockTimingAutomaton[f][0] = (lineIdx - 1)
 
                         # what happens if a flow has different bursts for different links?
-                        print f + r' at line ' + str(lineIdx)
+                        #print f + r' at line ' + str(lineIdx)
                         found = True
                         break
                 if found:
@@ -317,7 +318,7 @@ SOCK = open('flow-timing-automaton.txt', 'w')
 for f in sockTimingAutomaton:
     lastPkt = sockTimingAutomaton[f][0]
     print '@SOCK ' + f[1:].replace(r'_', r' ') + ' ' + str(lastPkt)
-    SOCK.write('@SOCK ' + f[1:].replace(r'_', r' ') + ' ' + str(lastPkt))
+    SOCK.write('@SOCK ' + f[1:].replace(r'_', r' ') + ' ' + str(lastPkt) + '\n')
 
     timingWnd = sockTimingAutomaton[f][1]
 
@@ -325,14 +326,13 @@ for f in sockTimingAutomaton:
 
     #for each burst
     for i in sorted(timingWnd):
-        
-        burst = 'burst ' + str(i - lastPkt) + ' '   # number of packets to next burst
+        burst = 'burst ' + str(i - lastPkt)  # number of packets to next burst
 
         # enumerate links of the flow from source to destination
-        for index, l in enumerate(flowLinks(int(x[0]), int(x[2]))):
+        for index, l in enumerate(flowLinks(threadIP[x[0]], threadIP[x[2]])):
             for link, interval in timingWnd[i]:
                 if l == link:
-                    burst += r'| ' + str(index + 1) + r' ' + str(interval)
+                    burst += r' | ' + str(index + 1) + r' ' + str(interval)
         print burst
         SOCK.write(burst + '\n')
         lastPkt = i
