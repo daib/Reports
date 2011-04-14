@@ -254,6 +254,9 @@ for link in linkFlows:
 
     intervalWnd = [0] * period
     pktWnd = [0] * (period + 1)
+
+    i = 0 
+
     #load the trace file
     LINKTRAFFIC = open('l' + link, 'r')
 
@@ -261,24 +264,33 @@ for link in linkFlows:
         pktNum += 1
         currentTime = int(line)
         interval = currentTime - previousTime
-
-        intervalWnd = shift(intervalWnd, interval)
-        pktWnd = shift(pktWnd, currentTime)
         previousTime = currentTime 
 
+        if count <= period:
+            intervalWnd = shift(intervalWnd, interval)
+            pktWnd = shift(pktWnd, currentTime)
+        else:
+            #get the minimal
+            if intervalWnd[i] > interval: 
+                intervalWnd[i] = interval
+            i += 1
+            if i >= period:
+                i = 0 
+
         #eliminate the initial period
-        if pktNum <= init_period:
-            continue
-        else: 
+        if pktNum > init_period:
             count += 1
 
 
-        if count >  period:
+        #if count >  period:
             #print intervalWnd 
             #print pktWnd
             #print pktNum
-            break
+            #break
         
+    #print pktWnd
+    #print 'link ' + link
+    #print intervalWnd
     LINKTRAFFIC.close()
 
     #lastIdx = 0
@@ -312,6 +324,7 @@ for link in linkFlows:
         #lastIdx = index
 SOCK = open('flow-timing-automaton.txt', 'w')
 
+SLEEP_SCALE = 10000
 
 #for each flow
 for f in sockTimingAutomaton:
@@ -331,7 +344,7 @@ for f in sockTimingAutomaton:
         for index, l in enumerate(flowLinks(threadIP[x[0]], threadIP[x[2]])):
             for link, interval in timingWnd[i]:
                 if l == link:
-                    burst += r' | ' + str(index + 1) + r' ' + str(interval)
+                    burst += r' | ' + str(index + 1) + r' ' + str(95 * interval/(SLEEP_SCALE * 100))
         print burst
         SOCK.write(burst + '\n')
         lastPkt = i
