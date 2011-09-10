@@ -15,7 +15,11 @@ cutoffg1 = zeros(size(g1));
 
 cutoffg1((h1/2 - cutoff_low):(h1/2 + cutoff_low),(w1/2 - cutoff_low):(w1/2 + cutoff_low)) = g1((h1/2 - cutoff_low):(h1/2 + cutoff_low),(w1/2 - cutoff_low):(w1/2 + cutoff_low));
 
-filteredfim1 = cutoffg1 .* fim1;
+filteredfim1 = zeros(size(im1));
+for i=1:b1
+    filteredfim1(:,:,i) = cutoffg1 .* fim1(:,:,i);
+end
+
 
 imagesc(abs(ifft2(ifftshift(filteredfim1))));
 
@@ -28,11 +32,14 @@ cutoffg2 = g2;
 
 cutoffg2((h2/2 - cutoff_high):(h2/2 + cutoff_high),(w2/2 - cutoff_high):(w2/2 + cutoff_high)) = 0;
 
-filteredfim2 = cutoffg2 .* fim2;
+filteredfim2 = zeros(size(im1));
+for i=1:b2
+    filteredfim2(:,:,i) = cutoffg2 .* fim2(:,:,i);
+end
 
 imagesc(abs(ifft2(ifftshift(filteredfim2))));
 
-himage = abs(ifft2(ifftshift(filteredfim1 + filteredfim2)));
+himage = abs(ifft2(ifftshift((filteredfim1 + filteredfim2)/2)));
 
 imagesc(himage);
 

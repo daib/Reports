@@ -3,8 +3,8 @@ close all; % closes all figures
 % read images and convert to single format
 im1 = im2single(imread('./DerekPicture.jpg'));
 im2 = im2single(imread('./nutmeg.jpg'));
-im1 = rgb2gray(im1); % convert to grayscale
-im2 = rgb2gray(im2);
+%im1 = rgb2gray(im1); % convert to grayscale
+%im2 = rgb2gray(im2);
 
 % use this if you want to align the two images (e.g., by the eyes) and crop
 % them to be of same size
