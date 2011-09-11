@@ -17,14 +17,15 @@ im2 = im2single(imread('./nutmeg.jpg'));
 %% this code)
 cutoff_low = 15;
 cutoff_high = 24; 
-im12 = hybridImage(im1, im2, cutoff_low, cutoff_high);
+sigma = 10;
+im12 = hybridImage(im1, im2, cutoff_low, cutoff_high, sigma);
 
 %% Crop resulting image (optional)
 figure(1), hold off, imagesc(im12), axis image, colormap gray
 disp('input crop points');
-[x, y] = ginput(2);  x = round(x); y = round(y);
-im12 = im12(min(y):max(y), min(x):max(x), :);
-figure(1), hold off, imagesc(im12), axis image, colormap gray
+%[x, y] = ginput(2);  x = round(x); y = round(y);
+%im12 = im12(min(y):max(y), min(x):max(x), :);
+%figure(1), hold off, imagesc(im12), axis image, colormap gray
 
 %% Compute and display Gaussian and Laplacian Pyramids (you need to supply this function)
 N = 5; % number of pyramid levels (you may use more or fewer, as needed)
