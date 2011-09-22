@@ -1,9 +1,9 @@
-im = im2single(imread('./input.png'));
+im = im2single(imread('./weave.jpg'));
 
 
 % path size
-pW = 30;    
-pH = 30;
+pW = 80;    
+pH = 80;
 
 %synthesis image size
 

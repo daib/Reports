@@ -3,8 +3,8 @@ function [ qim ] = quilting( im, pW, pH, sW, sH )
 
 [iH,iW,iB] = size(im);
 
-overlappingW  = floor(pW / 5);
-overlappingH = floor(pH / 5);
+overlappingW  = floor(pW / 6);
+overlappingH = floor(pH / 6);
 
 
 qim = zeros(sH, sW, iB);
