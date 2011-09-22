@@ -10,7 +10,7 @@ pH = 80;
 sW = 512;
 sH = 512;
 
-qim = quilting(im, pW, pH, sW, sH);
+qim = quilting(im, pW, pH, sW, sH, 0.1);
 
 imwrite(qim, 'qim.png', 'png');
 

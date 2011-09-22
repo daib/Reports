@@ -1,4 +1,4 @@
-function [ qim ] = quilting( im, pW, pH, sW, sH )
+function [ qim ] = quilting( im, pW, pH, sW, sH, err )
 %quilting : function that synthesizes a texture image from an input
 
 [iH,iW,iB] = size(im);
@@ -22,10 +22,8 @@ for j = floor(1:sH/(pH - overlappingH))
         else
             %search for a suitable block that is close to neighboring patched
             %blocks
-            minVal = 0;
-            minH = 0;
-            minW = 0;
-            
+           
+            errors = zeros(iW - pW, iH - pH);
             % iterate through the input image
             % to find the most suitable match
             for w = 1:(iW - pW)
@@ -44,19 +42,16 @@ for j = floor(1:sH/(pH - overlappingH))
                         error = error + overllappingError(tmpPatch((1:overlappingH) , : , :), qim(initPoitH:(initPoitH + overlappingH - 1), (initPoitW:(initPoitW + pW - 1)), :));
                     end
                     
-                    if minVal == 0
-                        minVal = error;
-                        minH = h;
-                        minW = w;
-                    else
-                        if minVal > error
-                            minVal = error;
-                            minH = h;
-                            minW = w;
-                        end
-                    end
+                    errors(w,h) = error;
                 end
             end
+            
+            best = min(errors(:));
+            candidates = find(errors(:) <= (1+err)*best);
+          
+            idx = candidates(ceil(rand(1)*length(candidates)));
+                         
+            [minW, minH] = ind2sub(size(errors), idx);
             
             patch = im((minH:(minH+pH - 1)), (minW:(minW+pW-1)), :);
             
