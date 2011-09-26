@@ -1,6 +1,3 @@
-im = im2single(imread('./weave.jpg'));
-
-
 % path size
 pW = 80;    
 pH = 80;

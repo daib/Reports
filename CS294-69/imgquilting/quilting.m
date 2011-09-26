@@ -1,11 +1,12 @@
-function [ qim ] = quilting( imname, pW, pH, sW, sH, err )
+function [ qim ] = quilting( imname, pW, pH, sW, sH, overlappingFraction, err )
 %quilting : function that synthesizes a texture image from an input
 
 im = im2single(imread(imname));
+
 [iH,iW,iB] = size(im);
 
-overlappingW  = floor(pW / 5);
-overlappingH = floor(pH / 5);
+overlappingW  = floor(pW * overlappingFraction);
+overlappingH = floor(pH * overlappingFraction);
 
 
 qim = zeros(sH, sW, iB);
@@ -19,7 +20,9 @@ for j = 1:floor(sH/(pH - overlappingH))
         
         if i == 1 && j == 1
             %first image, get an arbitrary one
-             patch = im(1:pH, 1:pW, :);
+            x = ceil(rand(1)*(iW - pW));
+            y = ceil(rand(1)*(iH - pH));
+            patch = im(x:(pH + x - 1), y:(pW + y -1), :);
         else
             %search for a suitable block that is close to neighboring patched
             %blocks

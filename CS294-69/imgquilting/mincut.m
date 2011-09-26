@@ -1,12 +1,16 @@
 function [ curve ] = mincut( im1, im2, dir )
 
-error = rgb2gray(im2 - im1).^2;
+error = (im2 - im1).^2;
+
+if ndims(error) > 2
+    error = sum(error, 3);
+end
 
 if dir
     error = error';
 end
 
-[h, w, b] = size(error);
+[h, w] = size(error);
 
 minError = error;
 
@@ -18,7 +22,7 @@ for i = 2:h
 end
 
 % trace back
-curve = zeros(h);
+curve = zeros(h,1);
 minVal  = minError(h, 1);
 index = 1;
 for j = 2:w
@@ -29,7 +33,7 @@ for j = 2:w
 end
 
 curve(h) = index;
-for i = h-1:1
+for i = h-1:-1:1
     minVal = 0;
     for j = max(index - 1, 1):min(index + 1, w);
         if minVal == 0
