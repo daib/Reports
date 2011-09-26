@@ -3,15 +3,15 @@ function [ qim ] = quilting( im, pW, pH, sW, sH, err )
 
 [iH,iW,iB] = size(im);
 
-overlappingW  = floor(pW / 6);
-overlappingH = floor(pH / 6);
+overlappingW  = floor(pW / 5);
+overlappingH = floor(pH / 5);
 
 
 qim = zeros(sH, sW, iB);
 patch = zeros(pH, pW, iB);
 
 
-for j = floor(1:sH/(pH - overlappingH))
+for j = 1:floor(sH/(pH - overlappingH))
     for i = 1:floor(sW/(pW - overlappingW))
         initPoitW = (i - 1) * (pW - overlappingW) + 1;
         initPoitH = (j - 1) * (pH - overlappingH) + 1;
