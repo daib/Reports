@@ -1,6 +1,7 @@
-function [ qim ] = quilting( im, pW, pH, sW, sH, err )
+function [ qim ] = quilting( imname, pW, pH, sW, sH, err )
 %quilting : function that synthesizes a texture image from an input
 
+im = im2single(imread(imname));
 [iH,iW,iB] = size(im);
 
 overlappingW  = floor(pW / 5);
@@ -81,5 +82,8 @@ for j = 1:floor(sH/(pH - overlappingH))
         qim(initPoitH:(initPoitH + pH - 1), initPoitW:(initPoitW + pW - 1), :) = patch;
     end
 end
+
+imwrite(qim, sprintf('quilting_%s.png', imname), 'png');
+
 end
 
