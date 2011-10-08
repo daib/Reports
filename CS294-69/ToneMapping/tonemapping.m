@@ -1,46 +1,58 @@
-function [ displayimg ] = tonemapping( hdr_filename, contrast)
+function [ rgb ] = tonemapping( hdr_filename, sigmaR, compressionfactor)
 % This function implement fast bilateral filering
 % for tone mapping
 
 hdr = hdrread(hdr_filename);
 
-%rgb = tonemap(hdr);
-%imshow(rgb);
-%displayimg = rgb;
+% input intensity= 1/61*(R*20+G*40+B)
+% r=R/(input intensity), g=G/input intensity, B=B/input intensity
+% log(base)=Bilateral(log(input intensity))
+% log(detail)=log(input intensity)-log(base)
+% log (output intensity)=log(base)*compressionfactor+log(detail) - log_absolute_scale
+% R output = r*10^(log(output intensity)), etc.
 
 % separate color and intensity
+r_index = 1;
+g_index = 2;
+b_index = 3;
 
-% to chrominance scale
-ycbcr = rgb2ycbcr(double(hdr));
+r_weight = 20;
+g_weight = 40;
+b_weight = 1;
+
+intensity = (hdr(:,:, r_index) * r_weight + hdr(:,:, g_index) * g_weight + hdr(:,:, b_index) * b_weight)/61;
+
+r = hdr(:,:, r_index)./intensity;
+g = hdr(:,:, g_index)./intensity;
+b = hdr(:,:, b_index)./intensity;
 
 
-logLuminance = log(ycbcr(:,:,1));
-sigma = min(size(logLuminance)) * .02;
+sigmaS = min(size(intensity)) * .02;
 
-f = fspecial('gaussian', min(size(logLuminance)), sigma);
+f = fspecial('gaussian', min(size(intensity)), sigmaS);
 %f = f / max(f(:));
-% points = ndgrid(-h:h, 1);
-% g = gauss_distribution(points, 0, sigma);
 
-%lIm = fastbilateral(lIm, f, g, 8, sigma);
-lIm = fastbilateral(logLuminance, f, 4, sigma);
+% sigmaR = 0.4;
+log_intensity = log(intensity);
+imshow(log_intensity);
 
-imshow(lIm);
+log_base = fastbilateral(log_intensity, f, 4, sigmaR);
+
+imshow(log_base);
 
 % obtain the details
-hIm = logLuminance - lIm;
+log_detail = log_intensity - log_base;
 
-imshow(hIm);
+imshow(log_detail);
 
+log_output_intensity = log_base * compressionfactor + log_detail - max(log_detail(:)) * compressionfactor;
 
-%reduce the contrast of the low level details
-lIm = lIm / contrast;
+imshow(log_output_intensity);
 
-imshow(lIm);
-
-ycbcr(:,:,1) = exp(hIm + lIm);
-
-rgb = ycbcr2rgb(ycbcr);
+rgb = zeros(size(hdr));
+rgb(:,:,r_index) = r .* exp(log_output_intensity);
+rgb(:,:,g_index) = g .* exp(log_output_intensity);
+rgb(:,:,b_index) = b .* exp(log_output_intensity);
 
 
 imshow(rgb);

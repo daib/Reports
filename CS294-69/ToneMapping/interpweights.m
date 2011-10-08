@@ -6,6 +6,14 @@ weights = zeros(size(I));
 
 for i = 1:h
     for j = 1:w
+%         x = (I(i,j) - ij)/segment;
+%         
+%         if x >= 0 && x < 1
+%             weights(i,j) = 1 - x;
+%         elseif x < 0 && x >= -1
+%             weights(i,j) = x;
+%         end
+        
         Is = I(i, j);
         if Is >= ij && Is < (ij + segment)
             weights(i,j) = 1 - (Is - ij)/segment;
