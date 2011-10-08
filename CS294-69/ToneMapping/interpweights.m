@@ -1,8 +1,8 @@
 function [ weights ] = interpweights(I, i, segment)
 
-weights = zeros(size(i));
+weights = zeros(size(I));
 
-[h,w] = size(i);
+[h,w] = size(I);
 
 for i = 1:h
     for j = 1:w

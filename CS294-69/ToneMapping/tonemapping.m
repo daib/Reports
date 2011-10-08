@@ -1,4 +1,4 @@
-function [ displayimg ] = tonemapping( hdr_filename )
+function [ displayimg ] = tonemapping( hdr_filename, contrast)
 % This function implement fast bilateral filering
 % for tone mapping
 
@@ -13,46 +13,27 @@ hdr = hdrread(hdr_filename);
 % to chrominance scale
 ycbcr = rgb2ycbcr(double(hdr));
 
-% tranform luminance of the image to frequency domain
-fy = fftshift(fft2(ycbcr(:,:,1)));
+sigma = 18;
 
-% then separate between high frequency parts and low frequency part
-
-[h,w] = size(fy);
-
-proportion = 5;
-
-fthresholdH = floor(h / proportion);
-
-fthresholdW = floor(w / proportion);
-
-halfH = floor(h/2);
-halfW = floor(w/2);
-
-lfY = fy;
-hfy = zeros(size(fy));
-
-lfY(halfH - fthresholdH:halfH + fthresholdH, halfW - fthresholdW:halfW + fthresholdW) = 0;
-
-hfy(halfH - fthresholdH:halfH + fthresholdH, halfW - fthresholdW:halfW + fthresholdW) = fy(halfH - fthresholdH:halfH + fthresholdH, halfW - fthresholdW:halfW + fthresholdW);
-
-% now, manipulate the flow frequency image luminance using bilateral filter
-lIm = ifft2(ifftshift(lfY));
-
-sigma = 10;
-
-f = fspecial('gaussian', min(h,w), sigma);
+f = fspecial('gaussian', min(size(ycbcr(:,:,1))), sigma);
 % points = ndgrid(-h:h, 1);
 % g = gauss_distribution(points, 0, sigma);
 
 %lIm = fastbilateral(lIm, f, g, 8, sigma);
-lIm = fastbilateral(lIm, f, 8, sigma);
+lIm = fastbilateral(ycbcr(:,:,1), f, 8, sigma);
 
-lfy = fftshift(fft2(lIm));
+% obtain the details
+hIm = ycbcr(:,:,1) - lIm;
 
-fy = hfy + lfy;
+imshow(hIm);
 
-ycbcr(:,:,1) = abs(ifft2(ifftshift(fy)));
+imshow(lIm);
+%reduce the contrast of the low level details
+lIm = lIm / contrast;
+
+imshow(lIm);
+
+ycbcr(:,:,1) = hIm + lIm;
 
 rgb = ycbcr2rgb(ycbcr);
 

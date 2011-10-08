@@ -16,10 +16,10 @@ NB_SEGMENTS = floor((maxI - minI)/sigma);
 segmentLen = ((maxI - minI) / NB_SEGMENTS);
 
 for j = 0:NB_SEGMENTS
-    ij = floor(minI + segmentLen * j);
+    ij = minI + segmentLen * j;
     %Gj = g(II - ij);
-    residual = II - ij;
-    Gj = gauss_distribution(residual, 0, sigma);
+    %residual = II - ij;
+    Gj = gauss_distribution(II - ij, 0, sigma);
     Kj = conv2(Gj, ff, 'same');
     Hj = Gj .* II;
     Hjstar = conv2(Hj, ff, 'same');
