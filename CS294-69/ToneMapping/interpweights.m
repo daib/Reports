@@ -1,4 +1,4 @@
-function [ weights ] = interpweights(I, i, segment)
+function [ weights ] = interpweights(I, ij, segment)
 
 weights = zeros(size(I));
 
@@ -7,10 +7,10 @@ weights = zeros(size(I));
 for i = 1:h
     for j = 1:w
         Is = I(i, j);
-        if Is >= i && Is < (i + segment)
-            weights(i,j) = 1 - (Is - i)/segment;
-        elseif Is < i && Is >= (i - segment)
-            weights(i,j) = 1 - (i - Is)/segment;
+        if Is >= ij && Is < (ij + segment)
+            weights(i,j) = 1 - (Is - ij)/segment;
+        elseif Is < ij && Is >= (ij - segment)
+            weights(i,j) = 1 - (ij - Is)/segment;
         end
     end
 end
