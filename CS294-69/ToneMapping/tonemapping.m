@@ -13,22 +13,26 @@ hdr = hdrread(hdr_filename);
 % to chrominance scale
 ycbcr = rgb2ycbcr(double(hdr));
 
-sigma = 0.7;
 
-f = fspecial('gaussian', min(size(ycbcr(:,:,1))), sigma);
-f = f / max(f(:));
+logLuminance = log(ycbcr(:,:,1));
+sigma = min(size(logLuminance)) * .02;
+
+f = fspecial('gaussian', min(size(logLuminance)), sigma);
+%f = f / max(f(:));
 % points = ndgrid(-h:h, 1);
 % g = gauss_distribution(points, 0, sigma);
 
 %lIm = fastbilateral(lIm, f, g, 8, sigma);
-lIm = fastbilateral(log(ycbcr(:,:,1)), f, 4, sigma);
+lIm = fastbilateral(logLuminance, f, 4, sigma);
+
+imshow(lIm);
 
 % obtain the details
-hIm = log(ycbcr(:,:,1)) - lIm;
+hIm = logLuminance - lIm;
 
 imshow(hIm);
 
-imshow(lIm);
+
 %reduce the contrast of the low level details
 lIm = lIm / contrast;
 
