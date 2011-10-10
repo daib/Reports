@@ -1,13 +1,13 @@
-function [ rgb ] = recoverHDR(img_list_file, folder)
+function [ rgb ] = recoverHDR(img_list_file, folder, scale, smooth)
 
 [names, f, fstops, gains, nd_filters] = textread(sprintf('%s/%s',folder, img_list_file),'%s %f %d %d %d', 'headerlines', 3);
 
 for j = 1:length(names)
     full_path_name = sprintf('%s/%s', folder, char(names(j)));
-    img(:,:,:,j) = im2single(imread(full_path_name));
+    img(:,:,:,j) = imresize(imread(full_path_name), scale);
 end
 
-t = 1/f;
+t = 1 ./f;
 
 B = log(t);
 
@@ -28,8 +28,8 @@ z_max = 255; %max(z(:));
 w = pixel_weight(ndgrid(z_min:z_max, 1), z_min, z_max);
 
 for c = 1:3 %for each color 
-    g(c) = gsolve(z, B, 10, w);
-    plot(g(c));
+    [g(:, c), lE(:, c)] = gsolve(z, B, smooth, w);
+    plot(g(:, c));
 end
 
 
