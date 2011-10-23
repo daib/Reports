@@ -1,24 +1,36 @@
-function [ PhiK ] = gradient_attenuation( gradientH, k, alpha, beta)
+function [ PhiK ] = gradient_attenuation( H, k, alpha, beta)
 
 %compute gaussian image at this level
 
-% generate Gaussian pyramid
-gkernel = fspecial('gaussian');
+if k == 0
+    GaussianH = H;
+else
+    % generate Gaussian pyramid
+    gkernel = fspecial('gaussian', 5);
 
-gHGaussian(:,:,1) = conv2(gradientH(:,:,1), gkernel, 'same');
-gHGaussian(:,:,2) = conv2(gradientH(:,:,2), gkernel, 'same');
+    gkernel = gkernel ./ sum(gkernel(:));
+    GaussianH(:,:) = conv2(H, gkernel, 'same');
+end
+% GaussianH(:,:,2) = conv2(H(:,:,2), gkernel, 'same');
 
-phiK = scaling_factor(gHGaussian, k, alpha, beta);
+phiK = scaling_factor(GaussianH, k, alpha, beta);
 
-% reduce the matrices' size
-rGHGaussian = imresize(gHGaussian, 1/2);
+% imshow((phiK)/1.3);
 
 % recursively compute Phi using gaussian pyramid
 
-if min(size(rGHGaussian)) >= 32
-    PhiKPP = gradient_attenuation(rGHGaussian, k+1, alpha, beta);
+if min(size(GaussianH(:,:,1))) >= 64
+    
+    % reduce the matrices' size
+    rHGaussian = imresize(GaussianH, ceil(size(GaussianH)/2) + 2);
+    % rHGaussian = imresize(GaussianH, 1/2);
+    PhiKPP = gradient_attenuation(rHGaussian, k+1, alpha, beta);
+    
+    % imshow(mat2gray(PhiKPP));
     
     PhiK = imresize(PhiKPP, size(phiK), 'bilinear') .* phiK;
+    % imshow((PhiK)/1.3);
+    % PhiK = interp2(PhiKPP, size(phiK), 'linear') .* phiK;
 else
     PhiK = phiK;
 end
