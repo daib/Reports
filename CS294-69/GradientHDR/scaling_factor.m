@@ -7,11 +7,11 @@ function [ phi ] = scaling_factor( gradientH, k, alpha, beta)
 gHK = gradientH;
 
 for x = 2:(X-1)
-    gHK(:, x, 1) = (gradientH(:, x+1, :) - gradientH(:, x-1, :)) / 2;
+    gHK(:, x, :) = (gradientH(:, x+1, :) - gradientH(:, x-1, :)) / 2;
 end
 
 for y = 2:(Y-1)
-    gHK(y, :, 2) = (gradientH(y+1, :, :) - gradientH(y-1, :, :)) / 2;
+    gHK(y, :, :) = (gradientH(y+1, :, :) - gradientH(y-1, :, :)) / 2;
 end
 
 % compute the magnitude of the gradient using euclide distance
