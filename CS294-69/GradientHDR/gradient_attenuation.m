@@ -2,6 +2,8 @@ function [ PhiK ] = gradient_attenuation( H, k, alpha, beta)
 
 %compute gaussian image at this level
 
+%GaussianH = H;
+
 if k == 0
     GaussianH = H;
 else
@@ -19,11 +21,12 @@ phiK = scaling_factor(GaussianH, k, alpha, beta);
 
 % recursively compute Phi using gaussian pyramid
 
-if min(size(GaussianH(:,:,1))) >= 64
+if min(size(GaussianH(:,:,1))) >= 32
     
     % reduce the matrices' size
-    rHGaussian = imresize(GaussianH, ceil(size(GaussianH)/2) + 2);
+    %rHGaussian = imresize(GaussianH, ceil(size(GaussianH)/2) + 2, 'nearest');
     % rHGaussian = imresize(GaussianH, 1/2);
+    rHGaussian = impyramid(GaussianH, 'reduce');
     PhiKPP = gradient_attenuation(rHGaussian, k+1, alpha, beta);
     
     % imshow(mat2gray(PhiKPP));

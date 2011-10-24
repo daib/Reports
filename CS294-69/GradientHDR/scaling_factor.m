@@ -2,23 +2,19 @@ function [ phi ] = scaling_factor( H, k, alpha, beta)
 
 [Y, X] = size(H(:,:,1));
 
-gHK = H;
+% gHK = zeros(size(H));
 
 %gHK(:,:, 1) = H;
 %gHK(:,:, 2) = H;
 
 
-% gHK = zeros(Y - 2, X - 2, 2);
+gHK = zeros(Y - 2, X - 2, 2);
 
-for x = 2:(X-1)
-    gHK(:, x, 1) = (H(:, x+1) - H(:, x-1));
-    % gHK(:, x - 1, 1) = (H(2:Y-1, x+1) - H(2:Y-1, x-1));
-end
+%gHK(:, 2:X-1, 1) = (H(:, 3:X) - H(:, 1:X-2));
+%gHK(2:Y-1, :, 2) = (H(3:Y, :) - H(1:Y-2, :));
 
-for y = 2:(Y-1)
-    gHK(y - 1, :, 2) = (H(y+1, :, :) - H(y-1, :));
-    % gHK(y - 1, :, 2) = (H(y+1, 2:X-1) - H(y-1, 2:X-1));
-end
+gHK(:, :, 1) = (H(2:Y-1, 3:X) - H(2:Y-1, 1:X-2));
+gHK(:, :, 2) = (H(3:Y, 2:X-1) - H(1:Y-2, 2:X-1));
 
 % gHK = gHK ./ pow2(k+1);
 
