@@ -46,12 +46,32 @@ imshow(divG);
 
 % find I such that ?2I = divG using multigrid method
 
-I = mgsolve(divG, 10);
+% use simple method
+
+m = max(size(divG));
+
+j = 1;
+p = 2;
+
+while p < m-1
+    j = j+1;
+    p = p * 2;
+end
+
+f = zeros(p + 1);
+
+f(1:size(divG,1), 1:size(divG,2)) = divG;
+
+u = mglin(f, 10);
+
+I(1:size(divG,1), 1:size(divG,2)) = u(1:size(divG,1), 1:size(divG,2));
+
+%I = I - min(I(:));
 
 %imwrite(I, 'I.png', 'png');
-imshow(mat2gray(I));
+% imshow(mat2gray(I) * 3);
 
-s = 0.5;
+s = 0.4;
 
 % [Y, X] = size(H);
 %base = 2;
@@ -59,7 +79,8 @@ s = 0.5;
 for i=1:3
     %c = ((hdr(base:Y-1,base:X-1, i) ./ H(base:Y-1, base:X-1))).^s;
     c = (hdr(:,:, i) ./ H).^s;
-    rgb(:,:,i) =  c .* I;
+    % c = hdr(:,:,i);
+    rgb(:,:,i) =  c .* mat2gray(I);
 end
 
 imshow(rgb);

@@ -1,4 +1,4 @@
-function u = ctof( uc)
+function u = ctof( uc, nf)
 %
 % function u = ctof( uc )
 %
@@ -13,9 +13,16 @@ function u = ctof( uc)
 % Author
 %   Scott R. Fulton (03/15/99)
 %
-[nx,ny] = size( uc );
-nxf = 2*(nx-1)+1;
-nyf = 2*(ny-1)+1;
+
+%[nx,ny] = size( uc );
+% nxf = 2*(nx+1)+1;
+% nyf = 2*(ny+1)+1;
+nxf = nf;
+nyf = nf;
+
+nx = floor(nf/2) + 1;
+ny = nx;
+
 u = zeros(nxf,nyf);
 
 % transfer by copying where the grids line up

@@ -1,4 +1,4 @@
-function [ uf ] = addint(uf, uc)
-    uf = uf + ctof(uc);
+function [ u ] = addint(uf, uc, nf)
+    u = uf + ctof(uc, nf);
 end
 
